@@ -1,47 +1,47 @@
-#pragma once
-
+#pragma once //to prevent reading the same file more than once during compiling
 using namespace std;
 
-int BMS_L(){
-    stringstream ss;
-    vector<Books> book;
-    ifstream BMS("LibraryBooks.txt");
-    string title, genre, serial, venue, line;
-    int size[3]={0,0,0};
-    if (!BMS) {cout << "error opening file!\n"; return 1;}
-    for (int i=0; !BMS.eof(); i++){
-        ss.clear();
-        getline(BMS, line);
-        ss.str(line);
-        ss >> serial;
-        ss.ignore();
-        getline(ss, title, '\t');
-        getline(ss, genre, '\t');
+int BMS_L(int cat=0, int sort=0){ //input category, sort
+    stringstream ss;    //stringstream to allow cin/cout of string related variables
+    vector<Books> book; //declared vector for book class -- allows program to dynamically allocate memory to the class during runtime
+    ifstream BMS("LibraryBooks.txt"); //opens text file
+    string title, genre, serial, venue, line; //declaration of variables
+    int size[3]={0,0,0};    //3 sizes to be used for iomanip -- text output manipulation
+    if (!BMS) {cout << "error opening file!\n"; return 1;}  //if unable to find or open file, returns error
+    for (int i=0;!BMS.eof(); i++){
+        ss.clear(); 
+        getline(BMS,line); //while BMS is read into line
+        ss.str(line); //sets line for string manipulation
+        ss >> serial;//first set of data is fed into serial                    
+        ss.ignore(); //skips any extra text, like space
+        getline(ss, title, '\t');   //sets second set of read data to title, ends when reader encounters \t
+        getline(ss, genre, '\t');   //repeat for genre and venue
         getline(ss, venue, '\n');
-        if (title.length()+5>size[0]) size[0]=title.length()+5;
-        if (genre.length()+5>size[1]) size[1]=genre.length()+5;
-        book.push_back(Books(title,genre,serial,venue));
+        if (title.length()+5>size[0]) size[0]=title.length()+5; //iomanip: checks the longest length and sets it to be the size of the setw later
+        if (genre.length()+5>size[1]) size[1]=genre.length()+5; //repeat for genre. only these two needed as they have varying lengths
+        book.push_back(Books(title,genre,serial,venue));        //vector function: since book is a declared class of Books, will need to use the Books constructor to add to book. pushback will add to the back of the current <vector>Books book
     }
-    size[2]=to_string(book.size()).length()+5;
+    //remind me to add sorting function
+    size[2]=to_string(book.size()).length()+5;  //iomanip: reads longest length of book size for serial number. i.e. legnth of number 10 is 2, so 2+5 spaces away is the next printed text
     cout << left << setw(size[2]) << "No." << setw(size[1]) << "Genre" << setw(15) << "Serial"
-    << setw(size[0]) << "Title" << setw(5) << "Venue" << endl;
-    for (int i=0; i<book.size();i++){
+    << setw(size[0]) << "Title" << setw(5) << endl; //prints category of output text according to max length of each string. fixed values for others
+    for (int i=0; i<book.size();i++){   //as long as i is less than book size, continue to print out values in book.
         cout << left << setw(size[2]) << i+1 << setw(size[1]) << book[i].genre << setw(15) 
         << book[i].serial << setw(size[0]) <<  book[i].title
         << setw(5) << book[i].venue << endl;
     }
-    if (BMS.is_open()) BMS.close();
+    BMS.close(); //forces BMS to close regardless of status
     return 0;
 };
 
-int BMS_L(char v){
-    vector<Books> book;
-    ifstream BMS("LibraryBooks.txt");
-    stringstream ss;
-    string title, genre, serial, venue, line;
-    int size[3]={0,0,0};
-    if (!BMS) {cout << "error opening file!\n"; return 1;}
-    for (int i=0; !BMS.eof(); i++){
+int BMS_L(const char& v = 0){ //input: venue
+    vector<Books> book;       //declared vector for book class -- allows program to dynamically allocate memory to the class during runtime
+    ifstream BMS("LibraryBooks.txt");   //opens text file
+    stringstream ss; //stringstream to allow cin/cout of string related variables
+    string title, genre, serial, venue, line; //declares variables
+    int size[3]={0,0,0};    //size for iomanip
+    if (!BMS) {cout << "error opening file!\n"; return 1;}  //if cannot open file, returns error
+    for (int i=0; !BMS.eof(); i++){ //while BMS is not end of file, reads from text and save as string
         ss.clear();
         getline(BMS, line);
         ss.str(line);
@@ -50,27 +50,28 @@ int BMS_L(char v){
         getline(ss, title, '\t');
         getline(ss, genre, '\t');
         getline(ss, venue, '\n');
-        if (title.length()+5>size[0]) size[0]=title.length()+5;
-        if (genre.length()+5>size[1]) size[1]=genre.length()+5; 
-        if (venue[0]==v){
+        if (venue[0]==v){   //only adds to the class if venue matches the libarian input from earlier
             book.push_back(Books(title,genre,serial,venue));
+            if (title.length()+5>size[0]) size[0]=title.length()+5; //changes max setw based on longest text length
+            if (genre.length()+5>size[1]) size[1]=genre.length()+5; 
         }
     }
+    cout << "Venue " << v << " Database" << endl; 
     size[2]=to_string(book.size()).length()+5;
     cout << left << setw(size[2]) << "No." << setw(size[1]) << "Genre" << setw(15) << "Serial"
     << setw(size[0]) << "Title" << setw(5) << "Venue" << endl;
-    cout << "Venue " << v << " Database" << endl; 
-    for (int i=0; i<book.size();i++){
+    for (int i=0; i<book.size();i++){   //displays books at the venue
         cout << left << setw(size[2]) << i+1 << setw(size[1]) << book[i].genre << setw(15) 
         << book[i].serial << setw(size[0]) << book[i].title << endl;
     }
+    //will need to differentiate this function from the above one. remind me.
     if (BMS.is_open()) BMS.close();
     return 0;
 };
 
-int BMS_L(int RTS){
+int BMS_L(int RTS, const char& v=0){
     //call RTS status
-    cout << "simulating rts" << endl;
+    cout << "simulating rts: robot no." << RTS << "of venue:" << v << endl;
     return 0;
 };
 
@@ -84,7 +85,7 @@ int BMS(){
         cin.ignore();
         switch (choice){
             case '1':   //show all books across database
-                BMS_L(); 
+                BMS_L(1,1); //inputs: category, sorting (high-low)
                 break;
             case '2':   //2nd choice: venue.
                 cout <<"Select among these venue(s):\nA\tB\tC\n";
@@ -97,10 +98,10 @@ int BMS(){
                         cout << "Please select a valid venue.\n";
                     }
                 }while((choice!='A')&&(choice!='B')&&(choice!='C'));
-                BMS_L(choice);
+                BMS_L(choice); //input: venue
                 break;
             case '3':   //RTS
-                BMS_L(1); 
+                BMS_L(1, choice); //input: robot number, venue
                 break;
             case '4':   //Exit
                 cout << "exiting program." << endl;
@@ -111,175 +112,15 @@ int BMS(){
         }
         
         do{
-            cout << "Continue using BMS? (Y/N): ";
-            cin >> choice;
-            if (choice=='y' || choice == 'n') choice = toupper(choice);
-            cin.clear();
-            if (choice == 'Y') break;
-            else if (choice == 'N') choice = '4';
+            cout << "Continue using BMS? (Y/N): ";  //asks if librarian wants to continue using BMS
+            cin >> choice; //input choice
+            if (choice=='y' || choice == 'n') choice = toupper(choice); //changes input to upper case if y or n. otherwise proceed
+            cin.clear(); //clears input
+            if (choice == 'Y') break; //ends loop and continue using BMS
+            else if (choice == 'N') choice = '4'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
             else cout << "Invalid input. Please try again: ";
         }while((choice!='Y')&&(choice!='4'));
 
     }while(choice!='4');
     return 0;
 };
-
-/*
-void BMS_View(string title[], string genre[], string serial[], string venue[], int max){
-    cout << "  " << "Venue" << "Genre" << "Title" << "Serial\n";  
-    for (int i = 0; i<max; i++){
-        if (title[i]==" ") break;
-        cout << i+1 << " " << venue[i] << " " << genre[i] << " " << title[i] << " " << serial[i] << endl;
-    }
-}
-
-void BMS_View(string title[], string genre[], string serial[], string venue[], int max,int option){
-    cout << "  " << "Genre" << "Title" << "Serial\n"; 
-    switch(option){
-        case 1: //venue A
-            for (int i = 0; i<max; i++){
-                if (venue[i] == "A")  cout << genre[i] << " " << title[i] << " " << serial[i] << endl;
-            }
-            break;
-        case 2: //venue B
-            for (int i = 0; i<max; i++){
-                if (venue[i] == "B")  cout << genre[i] << " " << title[i] << " " << serial[i] << endl;
-                }
-            break;
-        case 3: //venue C
-            for (int i = 0; i<max; i++){
-                if (venue[i] == "C")  cout << genre[i] << " " << title[i] << " " << serial[i] << endl;
-                }
-            break;
-    }
-}
-
-int BMS_Close(){
-    fstream BMS("LibraryBooks.txt");
-    if (BMS.is_open()) BMS.close();
-    return 0;
-}
-
-int BMS_Reader(int option){
-    stringstream ss;
-    const int max=20;
-    int maxref=max;
-    string serial[max], genre[max], title[max], venue[max], line;
-    ifstream BMS("LibraryBooks.txt");
-    if (!BMS) {cout << "error opening file!\n"; return 1;}
-    for (int i=0; i<max; i++){
-        getline(BMS, line);
-        if (BMS.eof()) {
-            maxref=i;
-            break;
-        }
-        ss.clear();
-        ss.str(line);
-        ss >> serial[i];
-        ss.ignore();
-        getline(ss, title[i], '\t');
-        getline(ss, genre[i], '\t');
-        getline(ss, venue[i], '\n');
-    }
-    switch (option){
-    case 1: //view all books
-        BMS_View(title, genre, serial, venue, maxref);
-        break;
-    case 2:
-        cout << "which venue? \n1. Venue A\n2. Venue B\n3. Venue C\n Choice: ";
-        cin >> option;
-        BMS_View(title, genre, serial, venue, maxref, option);
-        break;
-    default:
-        cout << "invalid reader\n";
-        break;
-    }
-    BMS.close();
-    return 0;
-}
-
-int Continue(int option){
-    cout << "Continue Viewing? \n1. yes\n2. no\nyour choice: ";
-    while(true){
-        cin.clear();
-        cin.ignore(256,'\n');
-        cin >> option;
-        if (option == 1 || option == 2) return option;
-        else {
-            cout << "invalid option. try again: ";
-            continue;
-        }
-    }
-}
-
-void BMS_Librarian(){
-    int option=0;
-    do{
-        cout << "database options:\n1. View Remaining Books\n2. View Book Types\n3. RTS Status\n4. Exit Menu\nChoose your option: ";
-        cin >> option;
-        switch (option)
-        {
-        case 1:
-            cout << "Viewing Remaining Books\n";
-            BMS_Reader(option);
-            break;
-        case 2:
-            cout << "Viewing Book Types\n";
-            BMS_Reader(option);
-            break;
-        case 3:
-            cout << "Checking Robotic Transport System Status\n";
-            break;
-        case 4:
-            cout << "exited menu\n";
-            BMS_Close();
-            return;
-        default:
-            cout << "invalid choice\n";
-            break;
-        }
-        BMS_Close();
-        option = Continue(option);
-    } while (option!=2);
-    cout <<"stopped viewing\n";
-}
-
-void BMS_User(){
-    int serial, books_taken=0;
-    
-    do{
-        cout << "please scan your book's serial code: ";
-        cin >> serial;
-        if (serial==123) cout << "you have scanned the same book twice! please scan again: ";
-        else {
-            if (++books_taken>=2) {
-                cout << "you have borrowed the maximum number of books.\n";
-                break;
-            }
-            //reduce book count by 1 in category and database
-            serial = Continue(serial);
-            if (serial == 2) break;
-        }
-    } while (books_taken < 2);
-    cout << "thank you for taking these books!\n";
-}
-
-void BMS_Access(){
-    int access;
-    cout << "are you a: \n1. librarian\n2. user\n";
-    cin >> access;
-    switch  (access){
-        case 1:
-            cout << "is librarian\n";
-            BMS_Librarian();
-            break;
-        case 2:
-            cout << "is user.\n";
-            BMS_User();
-            break;
-        default:
-            cout << "invalid input\n";
-            break;
-    }
-}
-    */

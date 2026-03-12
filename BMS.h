@@ -21,7 +21,7 @@ class Books{
         Books(string t, string g, string s, string v) : title(t), genre(g), serial(s), venue(v){};
 };
 
-int BMS_L();
-int BMS_L(char v);
-int BMS_L(int RTS);
+int BMS_L(int cat=0, int sort=0);
+int BMS_L(const char& v = 0);
+int BMS_L(int RTS=0, const char& v=0);
 int BMS();
