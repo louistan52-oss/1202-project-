@@ -81,7 +81,7 @@ void leaveVenue(std::string IC, const Queue& queue){
 }
 
 bool isValidVenue(char val){
-    if (val >= 'a' && val <='c'){ return true; }
+    if (val >= 'A' && val <='C'){ return true; }
     return false;
 }
 
@@ -186,3 +186,4 @@ int main(){
     }   
 
 }
+
