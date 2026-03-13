@@ -1,21 +1,21 @@
-#include "Users.h"
-#include <string>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
+#include "Users.h" // Users header file with method declarations
+#include <string> // String manipulations
+#include <iostream> // I/O stream
+#include <vector> // Vectors
+#include <map> // Maps
+#include <fstream> // I/O Filestream
+#include <sstream> 
+#include <iomanip> // I/O Manipulations
 using namespace std;
 
 // Users class
 Users::Users() {} // Default Constructor
-Users::Users(string user_name, string user_NRIC, string user_email, string user_password) {
+Users::Users(string user_name, string user_NRIC, string user_email, string user_password) { //Constructor
     name = user_name;
     NRIC = user_NRIC;
     email = user_email;
     password = user_password;
-} // Constructor
+}
 
 void Users::set_name(string user_name) { // Set data member "name" of object
     name = user_name;
@@ -33,23 +33,23 @@ void Users::set_password(string user_password) { // Set data member "password" o
     password = user_password;
 }
 
-string Users::get_name() {
+string Users::get_name() { // Get data member "name" of object
     return name;
 }
 
-string Users::get_NRIC() {
+string Users::get_NRIC() { // Get data member "NRIC" of object
     return NRIC;
 }
 
-string Users::get_email() {
+string Users::get_email() { // Get data member "email" of object
     return email;
 }
 
-string Users::get_password() {
+string Users::get_password() { // Get datamember "password" of object
     return password;
 }
 
-void Users::display_user() {
+void Users::display_user() { // Display data members (name, NRIC, email) of object
     cout << "Name: " << get_name() << endl;
     cout << "NRIC: " << get_NRIC() << endl;
     cout << "Email: " << get_email() << endl;
@@ -57,10 +57,10 @@ void Users::display_user() {
 
 
 // User_data class
-User_data::User_data() {}
-User_data::User_data(map<string, Users> user_database, vector<string> all_NRIC) {}
+User_data::User_data() {} // Default constructor
+User_data::User_data(map<string, Users> user_database, vector<string> all_NRIC) {} // Constructor
 
-void User_data::create_user() {
+void User_data::create_user() { // Create user and add to map to store object
     string NRIC, name, email, password, username;
     cout << "Enter NRIC: ";
     cin >> NRIC;
@@ -81,7 +81,7 @@ void User_data::create_user() {
     //return tempObj; 
 }
 
-Users User_data::retrieve_user() {
+Users User_data::retrieve_user() { // Retrieve data of object when given username
     string username;
     cout << "Enter username: ";
     cin >> username;
@@ -90,7 +90,7 @@ Users User_data::retrieve_user() {
     return tempObj;
 }
 
-void User_data::update_user() {
+void User_data::update_user() { // Update data of object when given username
     int change_val;
     string change;
     cout << "Enter the corresponding number to change the value" << endl;
@@ -115,7 +115,7 @@ void User_data::update_user() {
     }
 }
 
-void User_data::output_database() {
+void User_data::output_database() { // Output file data
     ofstream outFile;
     outFile.open("users.txt", ios::out | ios::app);
     for (auto key:user_database) {
@@ -178,4 +178,5 @@ bool password_verifier(string user_password) {
             return true;
         }
     }
+
 }
