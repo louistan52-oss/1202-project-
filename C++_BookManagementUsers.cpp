@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+using namespace std;
 
 class BookManagementUser {
 private:
@@ -76,4 +77,5 @@ int main() {
     BookManagementUser session;
     session.startSession();
     return 0;
+
 }
