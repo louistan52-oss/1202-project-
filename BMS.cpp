@@ -1,7 +1,7 @@
 #pragma once //to prevent reading the same file more than once during compiling
 using namespace std;
 
-int BMS_L(int cat=0, int sort=0){ //input category, sort
+int BMS_L(int cat, int sort){ //input category, sort
     stringstream ss;    //stringstream to allow cin/cout of string related variables
     vector<Books> book; //declared vector for book class -- allows program to dynamically allocate memory to the class during runtime
     ifstream BMS("LibraryBooks.txt"); //opens text file
@@ -34,7 +34,7 @@ int BMS_L(int cat=0, int sort=0){ //input category, sort
     return 0;
 };
 
-int BMS_L(const char& v = 0){ //input: venue
+int BMS_L(const char& v){ //input: venue
     vector<Books> book;       //declared vector for book class -- allows program to dynamically allocate memory to the class during runtime
     ifstream BMS("LibraryBooks.txt");   //opens text file
     stringstream ss; //stringstream to allow cin/cout of string related variables
@@ -69,7 +69,7 @@ int BMS_L(const char& v = 0){ //input: venue
     return 0;
 };
 
-int BMS_L(int RTS, const char& v=0){
+int BMS_L(int RTS, const char& v){
     //call RTS status
     cout << "simulating rts: robot no." << RTS << "of venue:" << v << endl;
     return 0;
