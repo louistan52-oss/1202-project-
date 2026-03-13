@@ -1,6 +1,8 @@
 #include "BMS.h"
 #include "BMS.cpp"
 
+Books bookobj;
+
 int main(){
-    BMS();
+    bookobj.BMS();
 }
