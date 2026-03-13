@@ -81,7 +81,6 @@ void leaveVenue(std::string IC, const Queue& queue){
 }
 
 bool isValidVenue(char val){
-    val = tolower(val);
     if (val >= 'a' && val <='c'){ return true; }
     return false;
 }
@@ -93,7 +92,7 @@ bool isValidTime(char val){
 char venueSelection(){
     char choice;
     std::cout << "Select a venue: A, B or C"<< std::endl;
-    
+    choice = toupper(choice);
     while(!(std::cin >> choice) || !isValidVenue(choice)){
         std::cout << "Please enter a valid input" << std::endl;
         std::cin.clear();
@@ -185,4 +184,5 @@ int main(){
             to_stop = true;
         }
     }   
+
 }
