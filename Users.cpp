@@ -1,21 +1,21 @@
-#include "Users.h" // Users header file with method declarations
-#include <string> // String manipulations
-#include <iostream> // I/O stream
-#include <vector> // Vectors
-#include <map> // Maps
-#include <fstream> // I/O Filestream
-#include <sstream> 
-#include <iomanip> // I/O Manipulations
+#include "Users.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 using namespace std;
 
 // Users class
 Users::Users() {} // Default Constructor
-Users::Users(string user_name, string user_NRIC, string user_email, string user_password) { //Constructor
+Users::Users(string user_name, string user_NRIC, string user_email, string user_password) {
     name = user_name;
     NRIC = user_NRIC;
     email = user_email;
     password = user_password;
-}
+} // Constructor
 
 void Users::set_name(string user_name) { // Set data member "name" of object
     name = user_name;
@@ -33,119 +33,37 @@ void Users::set_password(string user_password) { // Set data member "password" o
     password = user_password;
 }
 
-string Users::get_name() { // Get data member "name" of object
+string Users::get_name() {
     return name;
 }
 
-string Users::get_NRIC() { // Get data member "NRIC" of object
+string Users::get_NRIC() {
     return NRIC;
 }
 
-string Users::get_email() { // Get data member "email" of object
+string Users::get_email() {
     return email;
 }
 
-string Users::get_password() { // Get datamember "password" of object
+string Users::get_password() {
     return password;
 }
 
-void Users::display_user() { // Display data members (name, NRIC, email) of object
+void Users::display_user() {
     cout << "Name: " << get_name() << endl;
     cout << "NRIC: " << get_NRIC() << endl;
     cout << "Email: " << get_email() << endl;
 }
 
-
-// User_data class
-User_data::User_data() {} // Default constructor
-User_data::User_data(map<string, Users> user_database, vector<string> all_NRIC) {} // Constructor
-
-void User_data::create_user() { // Create user and add to map to store object
-    string NRIC, name, email, password, username;
-    cout << "Enter NRIC: ";
-    cin >> NRIC;
-    cout << "Enter name: ";
-    cin >> name;
-    cout << "Enter email: ";
-    cin >> email;
-    do {
-        cout << "Enter a password: ";
-        cin >> password;
-    }
-    while (!password_verifier(password));
-    cout << "Enter username: ";
-    cin >> username;
-    Users tempObj{name, NRIC, email, password};
-    user_database.insert({username, tempObj});
-    all_NRIC.push_back(NRIC);
-    //return tempObj; 
-}
-
-Users User_data::retrieve_user() { // Retrieve data of object when given username
-    string username;
-    cout << "Enter username: ";
-    cin >> username;
-    Users tempObj = user_database.at(username);
-    tempObj.display_user();
-    return tempObj;
-}
-
-void User_data::update_user() { // Update data of object when given username
-    int change_val;
-    string change;
-    cout << "Enter the corresponding number to change the value" << endl;
-    cout << "(1) Name" << endl;
-    cout << "(2) NRIC" << endl;
-    cout << "(3) Email" << endl;
-    cout << "(4) Password" << endl;    
-    cout << "(5) Userame" << endl;
-    cout << "(0) To exit" << endl;
-    cin >> change_val;
-    cout << endl;
-    switch (change_val) {
-        case 1: 
-            
-            break;
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 0:
-        default:
-    }
-}
-
-void User_data::output_database() { // Output file data
-    ofstream outFile;
-    outFile.open("users.txt", ios::out | ios::app);
-    for (auto key:user_database) {
-        auto values = key.second;
-        outFile << key.first << "," << values.get_NRIC() << "," << values.get_name() << "," 
-        << values.get_email() << "," << values.get_password();
-        outFile << endl;
-    }
-    outFile.close();
-}
-
-void User_data::dummy_data(){
-    Users dummy1{"Chris", "T0321927A", "chris@gmail.com", "Abcd1234"};
-    Users dummy2{"Yeoman", "T0317369G", "Yeoman@outlook.com", "YYYeoman"};
-    Users dummy3{"Anthony", "T1234567B", "anton@icloud.com", "@T0nytkha"};
-    Users dummy4{"Louis", "T0987654Z", "louis@yahoo.com", "1122AAbb"};
-    user_database.insert({"chris", dummy1});
-    user_database.insert({"yeoos", dummy2});
-    user_database.insert({"anton", dummy3});
-    user_database.insert({"louis", dummy4});
-}
-
-
 // Other functions
 void menu() {
+    cout << endl;
     cout << string(35, '=') << endl;
-    cout << "Press 1 to create user details" << endl;
-    cout << "Press 2 to retrieve user details" << endl;
-    cout << "Press 3 to create user details" << endl;
-    cout << "Press 4 to create user details" << endl;
+    cout << "Enter corresponding letter" << endl;
+    cout << "1" << endl;
+    cout << "2" << endl;
+    cout << "(D) to Delete account" << endl;
+    cout << "(L) to Logout" << endl;
     cout << string(35, '=') << endl;
 }
 
@@ -178,5 +96,68 @@ bool password_verifier(string user_password) {
             return true;
         }
     }
+}
 
+void program() {
+    map<string, Users> user_database;
+    vector<string> all_NRIC;
+    User_data dataObj(user_database, all_NRIC);
+    dataObj.dummy_data();
+    char lor;
+    string log_in;
+    
+    while (true) {
+        bool logout = 0;
+        cout << endl;
+        cout << "Enter (L) to login and (R) to register or (X) to exit program;" << endl;
+        cin >> lor;
+        if (lor == 'L' || lor == 'l') {
+            log_in = dataObj.login();
+            while (log_in != "") {
+                char option;
+                menu();
+                cin >> option;
+                cout << endl;
+                switch (option) {
+                    case 'D':
+                    case 'd':
+                        dataObj.delete_user(log_in);
+                        break;
+
+                    case 'L':
+                    case 'l':
+                        char confirmation;
+                        cout << "Are you sure you would like to log out?" << endl;
+                        cout << "Enter (Y) for yes or (N) for no: ";
+                        cin >> confirmation;
+                        if (confirmation == 'Y' || confirmation == 'y') {
+                            cout << "Your have decided to log out" << endl;
+                            log_in = "";
+                        }
+                        else if (confirmation == 'N' || confirmation == 'n') {
+                            cout << "You have decided not to log out" << endl;
+                        }
+                        else {
+                            cout << "Invalid input" << endl;
+                        }
+                        break;
+                    default: 
+                        cout << "Invalid input!" << endl;
+                        break;
+                }
+            };
+        }
+        else if (lor == 'R' || lor == 'r') {
+            dataObj.create_user();
+        }
+        else if (lor == 'X' || lor == 'x') {
+            cout << "You have decided to exit the program. Bye!" << endl;
+            dataObj.output_database();
+            break;
+        }
+        else {
+            cout << "Wrong user input. Please try again" << endl;
+        }
+
+    }
 }
