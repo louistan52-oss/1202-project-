@@ -15,7 +15,10 @@ class Queue{
         Queue(std::string time) : space{10}, venue_id{}, time{time}{} // non-default ctor w parameter time
 
         int addToQueue(std::string IC){ // add to the queue depending on IC, returns the queue number, otherwise if no space returns 0
-            
+            if (queue.count(IC)){
+                std::cout << "You are already registered!" << std::endl;
+                return 0;
+            }
             if (space-- > 0) {
                 queue.insert({IC, 10-space});
                 std::cout << "IC: " << IC << " | Timeslot: " << time << " | Venue: " << venue_id << std::endl;
@@ -48,7 +51,13 @@ class Queue{
             }
             return false;
         }
-
+        
+        friend void printQueueDetails(const Queue& obj){
+            std::cout << "Queue Details:" << std::endl;
+            for (const auto& e : obj.queue){
+                std::cout << e.second << ". " << e.first << std::endl;
+            }
+        }
 };
 
 class Venue{ // temporary class
@@ -63,6 +72,9 @@ class Venue{ // temporary class
         }
     }
     ~Venue(){} // dtor
+    std::vector<Queue>& getTimeSlots(){
+    return timeslots;
+    }
     const std::vector<Queue>& getTimeSlots() const{ // gets all timeslots
         return timeslots;
     }
@@ -81,7 +93,7 @@ void leaveVenue(std::string IC, const Queue& queue){
 }
 
 bool isValidVenue(char val){
-    if (val >= 'A' && val <='C'){ return true; }
+    if (val >= 'a' && val <='c'){ return true; }
     return false;
 }
 
@@ -89,10 +101,17 @@ bool isValidTime(char val){
     if (isdigit(val)) {return true;}
     return false;
 }
+bool isValidIC(std::string nric){
+    if (nric.length() < 9){
+        return false;
+    }
+    // whatever else IC needs
+    return true;
+}
 char venueSelection(){
     char choice;
     std::cout << "Select a venue: A, B or C"<< std::endl;
-    choice = toupper(choice);
+    choice = toupper(choice); 
     while(!(std::cin >> choice) || !isValidVenue(choice)){
         std::cout << "Please enter a valid input" << std::endl;
         std::cin.clear();
@@ -126,7 +145,7 @@ char timeSelection(const std::vector<Queue>& all_timeslots){
 }
 int main(){
     // main application should give User IC
-    std::string IC = "T0123456F";
+    std::string IC;
     Queue first_time{"13:30"};
     Queue second_time{"14:30"};
     Queue third_time{"15:30"};
@@ -143,13 +162,20 @@ int main(){
     bool to_stop{};
 
     while (!to_stop){
+        
+        do{
+            std::cout << "Enter IC: ";
+            std::cin >> IC;
+            std::cout << std::endl;
+        } while(!isValidIC(IC));
+
         char choice = venueSelection();
 
         //std::cout << "Choice: " << choice << std::endl;
 
         Venue& selected_Venue{venues[choice]}; // a reference/alias of the selected venue
 
-        std::vector<Queue> all_timeslots{selected_Venue.getTimeSlots()};
+        std::vector<Queue>& all_timeslots{selected_Venue.getTimeSlots()};
 
         // for (const Queue& e : all_timeslots){
         //     std::cout << e << ' ';
@@ -177,6 +203,8 @@ int main(){
 
         // std::cout << std::endl;
 
+        printQueueDetails(selected_time);
+
         char val{};
         std::cout << "Do you want to continue? ";
         std::cin >> val;
@@ -184,6 +212,4 @@ int main(){
             to_stop = true;
         }
     }   
-
 }
-
