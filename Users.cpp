@@ -114,42 +114,44 @@ void program() {
         cin >> lor;
         if (lor == 'L' || lor == 'l') {
             log_in = dataObj.login();
-            /*if (libObj.count(log_in)){
-                Librarian stuff will be here
-            }*/
-            while (log_in != ""/* && lib_data.count(log_in)*/) {
-                char option;
-                menu();
-                cin >> option;
-                cout << endl;
-                switch (option) {
-                    case 'D':
-                    case 'd':
-                        dataObj.delete_user(log_in);
-                        break;
+            if (log_in == "chris"){
+                //Librarian stuff will be here
+            }
+            else {
+                while (log_in != ""/* && lib_data.count(log_in)*/) {
+                    char option;
+                    menu();
+                    cin >> option;
+                    cout << endl;
+                    switch (option) {
+                        case 'D':
+                        case 'd':
+                            dataObj.delete_user(log_in);
+                            break;
 
-                    case 'L':
-                    case 'l':
-                        char confirmation;
-                        cout << "Are you sure you would like to log out?" << endl;
-                        cout << "Enter (Y) for yes or (N) for no: ";
-                        cin >> confirmation;
-                        if (confirmation == 'Y' || confirmation == 'y') {
-                            cout << "Your have decided to log out" << endl;
-                            log_in = "";
-                        }
-                        else if (confirmation == 'N' || confirmation == 'n') {
-                            cout << "You have decided not to log out" << endl;
-                        }
-                        else {
-                            cout << "Invalid input" << endl;
-                        }
-                        break;
-                    default: 
-                        cout << "Invalid input!" << endl;
-                        break;
-                }
-            };
+                        case 'L':
+                        case 'l':
+                            char confirmation;
+                            cout << "Are you sure you would like to log out?" << endl;
+                            cout << "Enter (Y) for yes or (N) for no: ";
+                            cin >> confirmation;
+                            if (confirmation == 'Y' || confirmation == 'y') {
+                                cout << "Your have decided to log out" << endl;
+                                log_in = "";
+                            }
+                            else if (confirmation == 'N' || confirmation == 'n') {
+                                cout << "You have decided not to log out" << endl;
+                            }
+                            else {
+                                cout << "Invalid input" << endl;
+                            }
+                            break;
+                        default: 
+                            cout << "Invalid input!" << endl;
+                            break;
+                    }
+                };
+            }
         }
         else if (lor == 'R' || lor == 'r') {
             dataObj.create_user();
