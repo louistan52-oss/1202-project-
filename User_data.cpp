@@ -67,10 +67,10 @@ void User_data::delete_user(string &username) {
 
 void User_data::output_database() {
     ofstream outFile;
-    outFile.open("users.txt", ios::out | ios::app);
+    outFile.open("users.txt");
     for (auto key:user_database) {
         auto values = key.second;
-        outFile << key.first << "," << values.get_NRIC() << "," << values.get_name() << "," 
+        outFile << key.first << " " << values.get_name() << "," << values.get_NRIC() << "," 
         << values.get_email() << "," << values.get_password();
         outFile << endl;
     }
@@ -78,8 +78,8 @@ void User_data::output_database() {
 }
 
 void User_data::input_database() {
-    string filename, line;
-    ifstream inFile;
+    string filename, key, value, user_creds;
+    ifstream inFile; 
     cout << "Enter file name: ";
     cin >> filename;
     inFile.open(filename);
@@ -87,8 +87,14 @@ void User_data::input_database() {
         cout << "Error in opening file! Please try another file" << endl;
     }
     else {
-        while (getline(inFile, line)) {
-            cout << line << endl;
+        while (inFile >> key >> value) {
+            vector<string> data;
+            istringstream data_stream(value);
+            while (getline(data_stream, user_creds, ',')) {
+                data.push_back(user_creds);
+            }
+            Users userObj{data[0], data[1], data[2], data[3]};
+            user_database.insert({data[1], userObj});
         }
     }
 }
