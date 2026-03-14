@@ -180,7 +180,7 @@ int Books::BMS(){
         cout << "1. View all books" << endl;
         cout << "2. Check Specific Venue" << endl;
         cout << "3. Check RTS" << endl; 
-        cout << "4. View Registered User Accounts" << endl; 
+        cout << "4. View Registered User Accounts" << endl;  //New command
         cout << "5. Exit BMS" << endl; 
         cout << "Awaiting user input:" << endl ;
 
