@@ -9,6 +9,7 @@
 #include <atomic>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -72,7 +73,7 @@ public:
 class SystemController {
 private:
     vector<Location*> fleet;
-    void createDummyEnvironment(); // Generates test files if missing
+    void createDummyEnvironment();
 
 public:
     SystemController();
