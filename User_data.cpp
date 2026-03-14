@@ -15,8 +15,14 @@ User_data::User_data(map<string, Users> user_database, vector<string> all_NRIC) 
 void User_data::create_user() {
     string NRIC, name, email, password, username;
     cout << endl;
-    cout << "Enter NRIC: ";
-    cin >> NRIC;
+    do {
+        cout << "Enter NRIC: ";
+        cin >> NRIC;
+        if (user_database.count(NRIC)) {
+            cout << "NRIC already in use. Please try again" << endl;
+        }
+    }
+    while (user_database.count(NRIC));
     cout << "Enter name: ";
     cin >> name;
     cout << "Enter email: ";
@@ -71,6 +77,22 @@ void User_data::output_database() {
     outFile.close();
 }
 
+void User_data::input_database() {
+    string filename, line;
+    ifstream inFile;
+    cout << "Enter file name: ";
+    cin >> filename;
+    inFile.open(filename);
+    if (!inFile.is_open()) {
+        cout << "Error in opening file! Please try another file" << endl;
+    }
+    else {
+        while (getline(inFile, line)) {
+            cout << line << endl;
+        }
+    }
+}
+
 void User_data::dummy_data(){
     Users dummy1{"Chris", "T0321927A", "chris@gmail.com", "Abcd1234"};
     Users dummy2{"Yeoman", "T0317369G", "Yeoman@outlook.com", "YYeoman9"};
@@ -105,4 +127,9 @@ string User_data::login() {
         cout << "Username does not exist" << endl;
         return "";
     }
+}
+
+void User_data::create_librarian() {
+    Users dummy_librarian{"T0123123F", "Librarian", "libby@gmail.com", "L1brarian"};
+    user_database.insert({"T0123123F", dummy_librarian});
 }
