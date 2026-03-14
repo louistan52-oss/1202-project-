@@ -9,7 +9,6 @@
 #include <atomic>
 #include <fstream>
 #include <iomanip>
-#include <algorithm>
 
 using namespace std;
 
@@ -96,18 +95,6 @@ public:
     
     void loadShelves();
     void saveShelves();
-};
-
-class SystemController {
-private:
-    vector<Location*> fleet;
-    void createDummyEnvironment();
-
-public:
-    SystemController();
-    ~SystemController();
-    void run();
-    void shutdown();
 };
 
 #endif
