@@ -10,12 +10,12 @@ using namespace std;
 
 // Users class
 Users::Users() {} // Default Constructor
-Users::Users(string user_name, string user_NRIC, string user_email, string user_password) {
+Users::Users(string user_name, string user_NRIC, string user_email, string user_password) { // Constructor
     name = user_name;
     NRIC = user_NRIC;
     email = user_email;
     password = user_password;
-} // Constructor
+}
 
 void Users::set_name(string user_name) { // Set data member "name" of object
     name = user_name;
@@ -102,8 +102,7 @@ void program() {
     map<string, Users> user_database;
     vector<string> all_NRIC;
     User_data dataObj(user_database, all_NRIC);
-    User_data libObj(user_database, all_NRIC);
-    dataObj.dummy_data();
+    //User_data libObj(user_database, all_NRIC);
     char lor;
     string log_in;
     dataObj.input_database();
@@ -119,7 +118,7 @@ void program() {
                 cout << "You're a librarian!" << endl;
             }
             else {
-                while (log_in != ""/* && lib_data.count(log_in)*/) {
+                while (log_in != "") {
                     char option;
                     menu();
                     cin >> option;
