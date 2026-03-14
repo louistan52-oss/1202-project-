@@ -108,71 +108,73 @@ void program() {
     map<string, Users> user_database;
     vector<string> all_NRIC;
     User_data dataObj(user_database, all_NRIC);
-    User_data libObj(user_database, all_NRIC);
-    dataObj.dummy_data();
-    char lor;
+
+    dataObj.input_database(); //Load from users.txt silently
+
+    int choice;
     string log_in;
-    dataObj.input_database();
+
     while (true) {
-        bool logout = 0;
-        cout << endl;
-        cout << "Enter (L) to login and (R) to register or (X) to exit program;" << endl;
-        cin >> lor;
-        if (lor == 'L' || lor == 'l') {
-            log_in = dataObj.login();
-            if (log_in == "T0321927A"){
-                lib.BMS();
+        cout << "\n========== Book Giveaway Menu ==========" << endl;
+        cout << "1. Login" << endl;
+        cout << "2. Register" << endl;
+        cout << "3. Exit" << endl;
+        cout << "Selection: ";
+
+        if (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+
+        if (choice == 1) // Login
+        {
+            int roleChoice;
+            cout << "\n--- Login Portal ---" << endl;
+            cout << "1. Login as Librarian" << endl;
+            cout << "2. Login as Visitor" << endl;
+            cout << "Selection: ";
+            cin >> roleChoice;
+            
+            if (roleChoice == 1)
+            {
+                log_in = dataObj.login();
+                if (log_in == "T0321927A") // Libaraian login
+                {
+                    cout << "Welcom Librarian!" << endl;
+                    lib.BMS();
+                }
+                else if (log_in != "")
+                {
+                    cout << "Access Denied: You do not have Librarian priviledges." << endl;
+                }
             }
-            else {
-                while (log_in != ""/* && lib_data.count(log_in)*/) {
-                    char option;
-                    menu();
-                    cin >> option;
-                    cout << endl;
-                    switch (option) {
-                        case 'A':
-                        case 'a':
-                            QueueUser();
-                            break;
-                        case 'D':
-                        case 'd':
-                            dataObj.delete_user(log_in);
-                            break;
-                        case 'L':
-                        case 'l':
-                            char confirmation;
-                            cout << "Are you sure you would like to log out?" << endl;
-                            cout << "Enter (Y) for yes or (N) for no: ";
-                            cin >> confirmation;
-                            if (confirmation == 'Y' || confirmation == 'y') {
-                                cout << "Your have decided to log out" << endl;
-                                log_in = "";
-                            }
-                            else if (confirmation == 'N' || confirmation == 'n') {
-                                cout << "You have decided not to log out" << endl;
-                            }
-                            else {
-                                cout << "Invalid input" << endl;
-                            }
-                            break;
-                        default: 
-                            cout << "Invalid input!" << endl;
-                            break;
-                    }
-                };
+
+            else if (roleChoice == 2) // Visitor login
+            {
+                log_in = dataObj.login();
+                if (log_in != "")
+                {
+                    cout << "Welcome Visitor! Redirecting to QMS..." << endl;
+                    QueueUser(); // Redirect to Queue Management
+                }
             }
         }
-        else if (lor == 'R' || lor == 'r') {
+        
+        else if (choice == 2) //Register user account
+        {
             dataObj.create_user();
         }
-        else if (lor == 'X' || lor == 'x') {
-            cout << "You have decided to exit the program. Bye!" << endl;
+        else if (choice == 3)
+        {
+            cout << "Saving data... Goodbye!" << endl;
             dataObj.output_database();
             break;
         }
-        else {
-            cout << "Wrong user input. Please try again" << endl;
+        else
+        {
+            cout << "Invalid choice. Please pick 1-3!" << endl;
         }
-
     }
 }
