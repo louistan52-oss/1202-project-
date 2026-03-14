@@ -66,8 +66,8 @@ void menu() {
     cout << endl;
     cout << string(35, '=') << endl;
     cout << "Enter corresponding letter" << endl;
-    cout << "(A) to register a Queue" << endl;
-    cout << "2" << endl;
+    cout << "(Q) to register a Queue" << endl;
+    cout << "(A) to take your choosen books home" << endl;
     cout << "(D) to Delete account" << endl;
     cout << "(L) to Logout" << endl;
     cout << string(35, '=') << endl;
