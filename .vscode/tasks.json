@@ -10,6 +10,7 @@
                 "/EHsc",
                 "/nologo",
                 "/Fe${fileDirname}\\main.exe",
+                //"/Fe${fileDirname}\\Robot_Transport_System.exe",
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\BMS_L.cpp",
                 "${fileDirname}\\BMS_U.cpp",

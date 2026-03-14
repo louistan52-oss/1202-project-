@@ -2,7 +2,7 @@
 #include "Robot_Transport_System.h"
 using namespace std;
 
-Robot R;
+SystemController SC;
 
 Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
     Books::BookData data;
@@ -170,8 +170,7 @@ int Books::BMS(){
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
             case '3':
-                cout << "RTS simulated\n";
-                R.display();
+                SC.run();
                 break;
             case '4':   //Exit
                 cout << "exiting program." << endl;
