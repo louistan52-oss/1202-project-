@@ -70,13 +70,13 @@ void User_data::output_database() {
     outFile.open("users.txt");
     for (auto key:user_database) {
         auto values = key.second;
-        outFile << key.first << " " << values.get_name() << "," << values.get_NRIC() << "," 
+        outFile << key.first << "," /* change from " " to "," */<< values.get_name() << "," << values.get_NRIC() << "," 
         << values.get_email() << "," << values.get_password();
         outFile << endl;
     }
     outFile.close();
 }
-
+/*
 void User_data::input_database() {
     string filename, key, value, user_creds;
     ifstream inFile; 
@@ -97,6 +97,31 @@ void User_data::input_database() {
             user_database.insert({data[1], userObj});
         }
     }
+}
+*/
+void User_data::input_database() 
+{
+    string line;
+    ifstream inFile("users.txt"); // Hardcode the filename here for a cleaner UX
+
+    if (!inFile.is_open()) // If file doesn't exist, just return; dummy_data() will handle the start
+    {
+        return;
+    }
+    while (getline(inFile, line)) 
+    {
+        stringstream ss(line);
+        string uname, nric, name, email, pass;
+
+        // Pase the CSV format: username, NRIC, name, email, password
+        if (getline(ss, uname, ',') && getline(ss, nric,',') && getline(ss, name, ',') 
+        && getline(ss, email, ',') && getline(ss, pass, ','))
+        {
+            Users temp(name, nric, email, pass);
+            user_database[uname] = temp; // Load into the map silently
+        }
+    }
+    inFile.close();
 }
 
 void User_data::dummy_data(){
