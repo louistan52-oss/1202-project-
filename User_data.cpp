@@ -77,29 +77,37 @@ void User_data::output_database() {
     outFile.close();
 }
 
-void User_data::input_database() 
-{
-    string line;
-    ifstream inFile("users.txt"); // Hardcode the filename here for a cleaner UX
-
-    if (!inFile.is_open()) // If file doesn't exist, just return; dummy_data() will handle the start
-    {
-        return;
+void User_data::input_database() {
+    string filename, key, value, user_creds;
+    ifstream inFile; 
+    cout << "Enter file name: ";
+    cin >> filename;
+    inFile.open(filename);
+    if (!inFile.is_open()) {
+        cout << "Error in opening file! Please try another file" << endl;
     }
-    while (getline(inFile, line)) 
-    {
-        stringstream ss(line);
-        string uname, nric, name, email, pass;
-
-        // Pase the CSV format: username, NRIC, name, email, password
-        if (getline(ss, uname, ',') && getline(ss, nric,',') && getline(ss, name, ',') 
-        && getline(ss, email, ',') && getline(ss, pass, ','))
-        {
-            Users temp(name, nric, email, pass);
-            user_database[uname] = temp; // Load into the map silently
+    else {
+        while (inFile >> key >> value) {
+            vector<string> data;
+            istringstream data_stream(value);
+            while (getline(data_stream, user_creds, ',')) {
+                data.push_back(user_creds);
+            }
+            Users userObj{data[0], data[1], data[2], data[3]};
+            user_database.insert({data[1], userObj});
         }
     }
-    inFile.close();
+}
+
+void User_data::dummy_data(){
+    Users dummy1{"Chris", "T0321927A", "chris@gmail.com", "Abcd1234"};
+    Users dummy2{"Yeoman", "T0317369G", "Yeoman@outlook.com", "YYeoman9"};
+    Users dummy3{"Anthony", "T1234567B", "anton@icloud.com", "@T0nytkha"};
+    Users dummy4{"Louis", "T0987654Z", "louis@yahoo.com", "1122AAbb"};
+    user_database.insert({"T0321927A", dummy1});
+    user_database.insert({"T0317369G", dummy2});
+    user_database.insert({"T1234567B", dummy3});
+    user_database.insert({"T0987654Z", dummy4});
 }
 
 string User_data::login() {
