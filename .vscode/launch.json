@@ -2,16 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "MSVC: Debug EXE",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\build\\1202-project.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "MSVC: Build All CPP"
+        "name": "C++ Debug (MSVC)",
+        "type": "cppvsdbg",
+        "request": "launch",
+        "program": "${fileDirname}\\main.exe",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${fileDirname}",
+        "environment": [],
+        "externalConsole": false,
+        "preLaunchTask": "C/C++: cl.exe build active file"
     }
   ]
 }

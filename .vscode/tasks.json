@@ -2,27 +2,29 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "MSVC: Build All CPP",
             "type": "shell",
+            "label": "C/C++: cl.exe build active file",
             "command": "cl.exe",
             "args": [
                 "/Zi",
                 "/EHsc",
                 "/nologo",
-                "/std:c++17",
-                "/Fe:C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\build\\1202-project.exe",
-                "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\main.cpp",
-                "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\BMS_L.cpp",
-                "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\BMS_U.cpp"
+                "/Fe${fileDirname}\\main.exe",
+                "${fileDirname}\\main.cpp",
+                "${fileDirname}\\BMS_L.cpp",
+                "${fileDirname}\\BMS_U.cpp",
+                "${fileDirname}\\Users.cpp",
+                "${fileDirname}\\User_data.cpp"
             ],
             "options": {
-                "cwd": "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-"
+                "cwd": "${fileDirname}"
             },
+            "problemMatcher": ["$msCompile"],
             "group": {
                 "kind": "build",
-                "isDefault": false
+                "isDefault": true
             },
-            "problemMatcher": "$msCompile"
+            "detail": "compiler: cl.exe"
         }
     ]
 }
