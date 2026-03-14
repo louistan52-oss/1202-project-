@@ -121,7 +121,7 @@ void program() {
             log_in = dataObj.login();
             if (log_in == "T0321927A"){
                 //Librarian stuff will be here
-                cout << "You're a librarian!" << endl;
+                lib.BMS();
             }
             else {
                 while (log_in != "") {
@@ -132,6 +132,10 @@ void program() {
                     switch (option) {
                         case 'A':
                         case 'a':
+                            session.startSession();
+                            break;
+                        case 'Q':
+                        case 'q':
                             QueueUser();
                             break;
                         case 'D':
