@@ -2,6 +2,8 @@
 #include "Robot_Transport_System.h"
 using namespace std;
 
+Robot R;
+
 Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
     Books::BookData data;
     stringstream ss;//stringstream to allow cin/cout of string related variables
@@ -169,6 +171,8 @@ int Books::BMS(){
                 break;
             case '3':
                 cout << "RTS simulated\n";
+                R.display();
+                break;
             case '4':   //Exit
                 cout << "exiting program." << endl;
                 return 0;
