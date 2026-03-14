@@ -102,6 +102,33 @@ int Books::BMS_L(int RTS, const char& v){
     return 0;
 };
 
+void Books::viewAllAccounts()
+{
+    ifstream inFile("users.txt");
+    string line;
+    cout << "\n======================================" << endl;
+    cout << "  LIBARIAN VIEW: USER DATABASE          " << endl;
+    cout << "========================================" << endl;
+
+    if (inFile.is_open()) // Headers for clarity
+    {   
+        cout << left << setw(15) << "Username" << setw(15) << "NRIC" << setw(15) << "Name" << "Email" << endl;
+        cout << string(60, '-') << endl;
+
+        while (getline(inFile, line))
+        {
+            cout << line << endl;
+        }
+        inFile.close();  
+    }
+    else
+    {
+        cout << "Error: Could not open users.txt database." << endl;
+    }
+    cout << "======================================\n" << endl;
+}
+
+
 int catSelect(){
     int cat;
     cout << "Choose specific category:\n1. View All\n2. View By Genre\n3. View by title\n4. View by serial no.\nChoice:";
@@ -152,11 +179,17 @@ int Books::BMS(){
     int cat;
     bool sort;
     do{
-        cout << "BMS - Librarian\n1. View all books\n2. Check Specific Venue"
-        << "\n3. Check RTS\n4. Exit BMS\nAwaiting user input: ";
+        cout << "\nBMS - Librarian" << endl;
+        cout << "1. View all books" << endl;
+        cout << "2. Check Specific Venue" << endl;
+        cout << "3. Check RTS" << endl; 
+        cout << "4. View Registered User Accounts" << endl; 
+        cout << "5. Exit BMS" << endl; 
+        cout << "Awaiting user input:" << endl ;
+
         cin >> choice; //first choice, menu option
         cin.clear();   //clear all input
-        cin.ignore();
+        cin.ignore(1000, '\n');
         switch (choice){
             case '1':   //show all books across database          
                 cat = catSelect();
@@ -170,10 +203,14 @@ int Books::BMS(){
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
             case '3':
+                cout << "RTS simulated\n";
                 SC.run();
                 break;
-            case '4':   //Exit
-                cout << "exiting program." << endl;
+            case '4': 
+                Books::viewAllAccounts();
+                return 0;
+            case '5': //Exit
+                cout << "Exiting BMS." << endl;
                 return 0;
             default:    //Error
                 cout << "Invalid option. Please try again: " << endl;
