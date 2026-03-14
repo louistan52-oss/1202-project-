@@ -114,8 +114,9 @@ void program() {
         cin >> lor;
         if (lor == 'L' || lor == 'l') {
             log_in = dataObj.login();
-            if (log_in == "chris"){
+            if (log_in == "T0321927A"){
                 //Librarian stuff will be here
+                cout << "You're a librarian!" << endl;
             }
             else {
                 while (log_in != ""/* && lib_data.count(log_in)*/) {
