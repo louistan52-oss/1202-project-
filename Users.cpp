@@ -102,10 +102,11 @@ void program() {
     map<string, Users> user_database;
     vector<string> all_NRIC;
     User_data dataObj(user_database, all_NRIC);
+    User_data libObj(user_database, all_NRIC);
     dataObj.dummy_data();
     char lor;
     string log_in;
-    
+    dataObj.input_database();
     while (true) {
         bool logout = 0;
         cout << endl;
@@ -113,7 +114,10 @@ void program() {
         cin >> lor;
         if (lor == 'L' || lor == 'l') {
             log_in = dataObj.login();
-            while (log_in != "") {
+            /*if (libObj.count(log_in)){
+                Librarian stuff will be here
+            }*/
+            while (log_in != ""/* && lib_data.count(log_in)*/) {
                 char option;
                 menu();
                 cin >> option;
