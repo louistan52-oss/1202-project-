@@ -1,191 +1,207 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <mutex>
-#include <atomic>
+#include "Robot_Transport_System.h"
 
-using namespace std;
 using namespace std::chrono_literals;
 
-// Global control flag: When false, all background threads will stop their loops
+// Actual definition of the global flag declared in the header.
 atomic<bool> systemRunning(true);
 
-// Enum class for strong-typed states. Prevents accidental math on states.
-enum class State { IDLE, WORKING, CHARGING, REFILLING };
-
-class Robot {
-private:
-    string name;
-    int battery;
-    int inventory = 5;
-    State status = State::IDLE;
-    
-    // Mutex (Mutual Exclusion) ensures only one thread accesses the robot's data at a time.
-    // This prevents "Data Races" where the display thread reads while the work thread writes.
-    mutable mutex mtx;
-
-public:
-    // Constructor initializes the robot with a name and a random battery level
-    Robot(string n) : name(n), battery(rand() % 31 + 60) {}
-
-    // Required for the Venue vector. Mutexes cannot be copied, so we move the robot data instead.
-    Robot(Robot&& other) noexcept {
-        lock_guard<mutex> lock(other.mtx);
-        name = move(other.name);
-        battery = other.battery;
-        inventory = other.inventory;
-        status = other.status;
+// --- SHELVES IMPLEMENTATION ---
+Shelves::Shelves(string path, int cap) : maxCapacity(cap), filePath(path) {
+    // Attempt to load the current count from the .txt file on startup
+    ifstream inFile(filePath);
+    if (inFile.is_open()) {
+        inFile >> currentBooks;
+        inFile.close();
+    } else {
+        currentBooks = 0; // Default if file is missing
     }
+}
 
-    string getName() const { return name; }
-
-    // Converts the Enum State into a human-readable string with ANSI colors
-    string getStatusString() const {
-        switch (status) {
-            case State::WORKING:  return "\033[1;33mWORKING\033[0m";   // Yellow
-            case State::CHARGING: return "\033[1;36mCHARGING\033[0m";  // Cyan
-            case State::REFILLING: return "\033[1;35mREFILLING\033[0m"; // Magenta
-            default:               return "\033[1;32mIDLE\033[0m";      // Green
-        }
+void Shelves::saveToFile() {
+    // Overwrites the .txt file with the updated number of books
+    ofstream outFile(filePath);
+    if (outFile.is_open()) {
+        outFile << currentBooks;
+        outFile.close();
     }
+}
 
-    // Task: Drains battery/inventory. If limits hit, triggers next task thread.
-    void startWorking() {
-        {
-            lock_guard<mutex> lock(mtx);
-            status = State::WORKING;
-        }
-        
-        // Launch background thread
-        thread t([this]() {
-            while (systemRunning) {
-                this_thread::sleep_for(1s); // Simulate time taken to shelf a book
-                
-                lock_guard<mutex> lock(mtx);
-                battery -= 3;
-                inventory -= 1;
+bool Shelves::needsRestock() const { return currentBooks < maxCapacity; }
 
-                // Threshold Check: Need Charge?
-                if (battery <= 20) {
-                    status = State::CHARGING;
-                    thread(&Robot::startCharging, this).detach();
-                    break; // Exit this working thread
-                }
-                
-                // Threshold Check: Need Books?
-                if (inventory <= 0) {
-                    status = State::REFILLING;
-                    thread(&Robot::startRefilling, this).detach();
-                    break; // Exit this working thread
-                }
-            }
-        });
-        t.detach(); // Let the thread run independently
+// --- LOCATION IMPLEMENTATION ---
+Location::Location(int vid, string name, string sPath) 
+    : id(vid), locationName(name), stockFilePath(sPath) {
+    // Load the initial stock pile count from the .txt file
+    ifstream inFile(stockFilePath);
+    if (inFile.is_open()) {
+        inFile >> stockAmount;
+        inFile.close();
+    } else {
+        stockAmount = 100;
     }
+}
 
-    // Background task: Increases battery to 100%
-    void startCharging() {
+Location::~Location() {}
+
+void Location::saveStockToFile() {
+    // Thread-safe writing of the stock pile to the .txt file
+    lock_guard<mutex> lock(stockMtx);
+    ofstream outFile(stockFilePath);
+    if (outFile.is_open()) {
+        outFile << stockAmount;
+        outFile.close();
+    }
+}
+
+// --- ROBOT IMPLEMENTATION ---
+Robot::Robot(string n) : name(n), battery(rand() % 31 + 60) {}
+
+// Move constructor logic: safely transfers data between robot objects
+Robot::Robot(Robot&& other) noexcept {
+    lock_guard<mutex> lock(other.rMtx);
+    name = move(other.name);
+    battery = other.battery;
+    inventory = other.inventory;
+    status = other.status;
+}
+
+string Robot::getName() const { return name; }
+State Robot::getStatus() const { lock_guard<mutex> lock(rMtx); return status; }
+
+void Robot::startWorking(Shelves& venueShelves, int& venueStock, mutex& sMtx, Location& loc) {
+    {
+        lock_guard<mutex> lock(rMtx);
+        status = State::WORKING;
+    }
+    // Launch background thread: Robot operates independently of the main menu
+    thread t([this, &venueShelves, &venueStock, &sMtx, &loc]() {
         while (systemRunning) {
-            this_thread::sleep_for(500ms);
-            lock_guard<mutex> lock(mtx);
-            battery += 5;
-            if (battery >= 100) {
-                battery = 100;
+            this_thread::sleep_for(1s); // Simulate time taken to place one book
+            lock_guard<mutex> lock(rMtx);
+
+            // EXIT CONDITION 1: Shelf is full
+            if (!venueShelves.needsRestock()) {
                 status = State::IDLE;
-                break; // Charging complete
+                venueShelves.saveToFile(); // Save shelf progress
+                break;
+            }
+            // EXIT CONDITION 2: Robot out of books
+            if (inventory <= 0) {
+                status = State::REFILLING;
+                venueShelves.saveToFile(); 
+                // Start the refill process (moves to another thread)
+                thread(&Robot::startRefilling, this, ref(venueStock), ref(sMtx), ref(loc)).detach();
+                break;
+            }
+
+            // Perform Work
+            venueShelves.currentBooks++;
+            inventory--;
+            battery -= 2;
+
+            // EXIT CONDITION 3: Low battery
+            if (battery <= 20) {
+                status = State::CHARGING;
+                venueShelves.saveToFile();
+                thread(&Robot::startCharging, this).detach();
+                break;
             }
         }
-    }
+    });
+    t.detach(); // Allow the thread to live on its own
+}
 
-    // Background task: Simple delay to simulate manual book reloading
-    void startRefilling() {
-        this_thread::sleep_for(3s); 
-        if (systemRunning) {
-            lock_guard<mutex> lock(mtx);
-            inventory = 5;
+void Robot::startRefilling(int& venueStock, mutex& sMtx, Location& loc) {
+    this_thread::sleep_for(3s); // Simulated travel time to the stock room
+    if (systemRunning) {
+        lock_guard<mutex> sLock(sMtx); // Lock the Venue stock pile
+        lock_guard<mutex> rLock(rMtx); // Lock the Robot's data
+        
+        if (venueStock > 0) {
+            int take = min(5, venueStock); // Take up to 5 books
+            venueStock -= take;
+            inventory = take;
             status = State::IDLE;
+            loc.saveStockToFile(); // Persist the reduction in stock to .txt
+        } else {
+            status = State::IDLE; // No stock left to take
         }
     }
+}
 
-    // Formatted output of the robot's current stats
-    void display() const {
-        lock_guard<mutex> lock(mtx);
-        cout << left << setw(10) << name 
-             << " | Bat: " << setw(3) << battery << "%"
-             << " | Inv: " << inventory << "/5"
-             << " | Status: " << getStatusString() << endl;
+void Robot::startCharging() {
+    while (systemRunning) {
+        this_thread::sleep_for(500ms);
+        lock_guard<mutex> lock(rMtx);
+        battery += 5;
+        if (battery >= 100) { 
+            battery = 100; 
+            status = State::IDLE; 
+            break; 
+        }
     }
+}
 
-    State getStatus() const { lock_guard<mutex> lock(mtx); return status; }
-};
+void Robot::display() const {
+    lock_guard<mutex> lock(rMtx);
+    cout << left << setw(10) << name << " | Bat: " << setw(3) << battery 
+         << "% | Inv: " << inventory << "/5 | Status: " << (int)status << endl;
+}
 
-class Venue {
-public:
-    int id;
-    vector<Robot> robots;
+// --- VENUE IMPLEMENTATION ---
+Venue::Venue(int vid, string name, string stockFile, string shelfFile, int shelfCap) 
+    : Location(vid, name, stockFile), venueShelves(shelfFile, shelfCap) {
+    robots.emplace_back("Alpha");
+    robots.emplace_back("Bravo");
+    robots.emplace_back("Charlie");
+}
 
-    Venue(int vid) : id(vid) {
-        // Build robots directly in the vector to avoid move/copy overhead
-        robots.emplace_back("Alpha");
-        robots.emplace_back("Bravo");
-        robots.emplace_back("Charlie");
+void Venue::refreshVenue() {
+    cout << "\n--- " << locationName << " (ID: " << id << ") ---" << endl;
+    cout << "Stock: " << stockAmount << " | Shelf: " << venueShelves.currentBooks << "/" << venueShelves.maxCapacity << endl;
+    
+    // Check if any robot is currently active
+    bool anyoneWorking = false;
+    for (auto& r : robots) {
+        r.display();
+        if (r.getStatus() == State::WORKING || r.getStatus() == State::REFILLING) 
+            anyoneWorking = true;
     }
-
-    // Core logic: Displays current robots and assigns work if the venue is neglected
-    void refreshVenue() {
-        cout << "\n--- VENUE " << id << " LIVE DASHBOARD ---" << endl;
-        bool anyoneWorking = false;
-
+    
+    // Deployment Manager: If work is needed and no one is on it, send an Idle robot
+    if (!anyoneWorking && venueShelves.needsRestock()) {
         for (auto& r : robots) {
-            r.display();
-            if (r.getStatus() == State::WORKING) anyoneWorking = true;
-        }
-
-        // Automatic Manager: If no robot is working, find an idle one to deploy
-        if (!anyoneWorking) {
-            for (auto& r : robots) {
-                if (r.getStatus() == State::IDLE) {
-                    cout << ">> Assigning " << r.getName() << " to restocking duty..." << endl;
-                    r.startWorking();
-                    break; // Only deploy one robot
-                }
+            if (r.getStatus() == State::IDLE) {
+                r.startWorking(venueShelves, stockAmount, stockMtx, *this);
+                break;
             }
         }
     }
-};
+}
 
+// --- MAIN ENTRY POINT ---
 int main() {
     srand(static_cast<unsigned int>(time(0)));
     
-    // Create our 3 venues
+    // Initialization of the fleet with specific .txt file paths
     vector<Venue> fleet;
-    fleet.emplace_back(1);
-    fleet.emplace_back(2);
-    fleet.emplace_back(3);
+    fleet.emplace_back(1, "Main Lib", "v1_stock.txt", "v1_shelf.txt", 20);
+    fleet.emplace_back(2, "Archive", "v2_stock.txt", "v2_shelf.txt", 50);
 
     int choice;
     while (true) {
-        cout << "\nEnter Venue (1-3) or 0 to Exit: ";
-        if (!(cin >> choice)) {
-            cin.clear(); // Clear error flag
-            cin.ignore(1000, '\n'); // Discard bad input
-            continue;
+        cout << "\nSelect Venue (1-2) or 0 to Exit: ";
+        if (!(cin >> choice)) { 
+            cin.clear(); 
+            cin.ignore(1000, '\n'); 
+            continue; 
         }
-        
         if (choice == 0) break;
-        if (choice >= 1 && choice <= 3) {
-            fleet[choice - 1].refreshVenue();
-        }
+        if (choice >= 1 && choice <= 2) fleet[choice - 1].refreshVenue();
     }
 
-    // Graceful Shutdown
-    systemRunning = false; 
-    cout << "Stopping background systems... Goodbye." << endl;
-    this_thread::sleep_for(500ms); // Brief pause to allow threads to close
-    
+    // SHUTDOWN: Set the flag to false to stop all background loops
+    systemRunning = false;
+    this_thread::sleep_for(500ms); 
     return 0;
 }
