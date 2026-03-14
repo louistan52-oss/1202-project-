@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "MSVC: Build All CPP",
+            "type": "shell",
+            "command": "cl.exe",
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/nologo",
+                "/std:c++17",
+                "/Fe:C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\build\\1202-project.exe",
+                "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\main.cpp",
+                "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\BMS_L.cpp",
+                "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-\\BMS_U.cpp"
+            ],
+            "options": {
+                "cwd": "C:\\Users\\antho\\OneDrive\\Desktop\\studies\\Y1\\T2\\RSE1202-C++\\1202-project-"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
