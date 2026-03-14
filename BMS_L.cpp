@@ -1,4 +1,5 @@
 #include "BMS.h"
+#include "Robot_Transport_System.h"
 using namespace std;
 
 Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
@@ -93,6 +94,32 @@ int Books::BMS_L(const char& v, int cat, bool sort){ //input: venue
     return 0;
 };
 
+void Books::viewAllAccounts()
+{
+    ifstream inFile("users.txt");
+    string line;
+    cout << "\n======================================" << endl;
+    cout << "  LIBARIAN VIEW: USER DATABASE          " << endl;
+    cout << "========================================" << endl;
+
+    if (inFile.is_open()) // Headers for clarity
+    {   
+        cout << left << setw(15) << "Username" << setw(15) << "NRIC" << setw(15) << "Name" << "Email" << endl;
+        cout << string(60, '-') << endl;
+
+        while (getline(inFile, line))
+        {
+            cout << line << endl;
+        }
+        inFile.close();  
+    }
+    else
+    {
+        cout << "Error: Could not open users.txt database." << endl;
+    }
+    cout << "======================================\n" << endl;
+}
+
 int Books::BMS_L(int RTS, const char& v){
     //call RTS status
     cout << "simulating rts: robot no." << RTS << "of venue:" << v << endl;
@@ -149,11 +176,17 @@ int Books::BMS(){
     int cat;
     bool sort;
     do{
-        cout << "BMS - Librarian\n1. View all books\n2. Check Specific Venue"
-        << "\n3. Check RTS\n4. Exit BMS\nAwaiting user input: ";
+        cout << "\nBMS - Librarian" << endl;
+        cout << "1. View all books" << endl;
+        cout << "2. Check Specific Venue" << endl;
+        cout << "3. Check RTS" << endl; 
+        cout << "4. View Registered User Accounts" << endl; 
+        cout << "5. Exit BMS" << endl; 
+        cout << "Awaiting user input:" << endl ;
+
         cin >> choice; //first choice, menu option
         cin.clear();   //clear all input
-        cin.ignore();
+        cin.ignore(1000, '\n');
         switch (choice){
             case '1':   //show all books across database          
                 cat = catSelect();
@@ -166,8 +199,13 @@ int Books::BMS(){
                 sort = sortSelect();
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
-            case '3':   //Exit
-                cout << "exiting program." << endl;
+            case '3':
+                cout << "RTS simulated\n";
+            case '4':   //Exit
+                Books::viewAllAccounts();
+                return 0;
+            case '5':
+                cout << "Existing BMS." << endl;
                 return 0;
             default:    //Error
                 cout << "Invalid option. Please try again: " << endl;
@@ -180,10 +218,10 @@ int Books::BMS(){
             if (choice=='y' || choice == 'n') choice = toupper(choice); //changes input to upper case if y or n. otherwise proceed
             cin.clear(); //clears input
             if (choice == 'Y') break; //ends loop and continue using BMS
-            else if (choice == 'N') choice = '3'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
+            else if (choice == 'N') choice = '4'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
             else cout << "Invalid input. Please try again: ";
-        }while((choice!='Y')&&(choice!='3'));
+        }while((choice!='Y')&&(choice!='4'));
 
-    }while(choice!='3');
+    }while(choice!='5');
     return 0;
 };
