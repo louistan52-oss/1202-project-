@@ -59,6 +59,7 @@ class User_data
         void delete_user(string &username); // Delete user object from database
         void output_database(); // Write map onto text file
         void input_database(); // Read text file data and convert to map
+        void create_librarian(); // Creates a fake librarian with details
         void dummy_data();
         string login();
 };
