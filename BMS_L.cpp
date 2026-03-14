@@ -1,4 +1,5 @@
 #include "BMS.h"
+#include "Robot_Transport_System.h"
 using namespace std;
 
 Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
@@ -166,7 +167,9 @@ int Books::BMS(){
                 sort = sortSelect();
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
-            case '3':   //Exit
+            case '3':
+                cout << "RTS simulated\n";
+            case '4':   //Exit
                 cout << "exiting program." << endl;
                 return 0;
             default:    //Error
@@ -180,10 +183,10 @@ int Books::BMS(){
             if (choice=='y' || choice == 'n') choice = toupper(choice); //changes input to upper case if y or n. otherwise proceed
             cin.clear(); //clears input
             if (choice == 'Y') break; //ends loop and continue using BMS
-            else if (choice == 'N') choice = '3'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
+            else if (choice == 'N') choice = '4'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
             else cout << "Invalid input. Please try again: ";
-        }while((choice!='Y')&&(choice!='3'));
+        }while((choice!='Y')&&(choice!='4'));
 
-    }while(choice!='3');
+    }while(choice!='4');
     return 0;
 };

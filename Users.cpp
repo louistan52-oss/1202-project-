@@ -1,4 +1,6 @@
 #include "Users.h"
+#include "BMS.h"
+#include "QMS_UPDATED.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -7,6 +9,10 @@
 #include <sstream>
 #include <iomanip>
 using namespace std;
+
+//librarian and user class, database class
+Books lib;
+BookManagementUser session;
 
 // Users class
 Users::Users() {} // Default Constructor
@@ -60,7 +66,7 @@ void menu() {
     cout << endl;
     cout << string(35, '=') << endl;
     cout << "Enter corresponding letter" << endl;
-    cout << "1" << endl;
+    cout << "(A) to register a Queue" << endl;
     cout << "2" << endl;
     cout << "(D) to Delete account" << endl;
     cout << "(L) to Logout" << endl;
@@ -114,8 +120,8 @@ void program() {
         cin >> lor;
         if (lor == 'L' || lor == 'l') {
             log_in = dataObj.login();
-            if (log_in == "chris"){
-                //Librarian stuff will be here
+            if (log_in == "T0321927A"){
+                lib.BMS();
             }
             else {
                 while (log_in != ""/* && lib_data.count(log_in)*/) {
@@ -124,11 +130,14 @@ void program() {
                     cin >> option;
                     cout << endl;
                     switch (option) {
+                        case 'A':
+                        case 'a':
+                            QueueUser();
+                            break;
                         case 'D':
                         case 'd':
                             dataObj.delete_user(log_in);
                             break;
-
                         case 'L':
                         case 'l':
                             char confirmation;
