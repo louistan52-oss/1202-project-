@@ -17,6 +17,7 @@ class Books{
     public:
         Books(): title(""), genre(""), serial(""), venue(""){}; //default constructor
         Books(std::string t, std::string g, std::string s, std::string v) : title(t), genre(g), serial(s), venue(v){};
+        void viewAllAccounts();
         int BMS_L(int cat=0, bool sort=0);
         int BMS_L(const char& v = 0, int cat=0, bool sort=0);
         int BMS_L(int RTS=0, const char& v=0);
