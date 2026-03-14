@@ -94,6 +94,32 @@ int Books::BMS_L(const char& v, int cat, bool sort){ //input: venue
     return 0;
 };
 
+void Books::viewAllAccounts()
+{
+    ifstream inFile("users.txt");
+    string line;
+    cout << "\n======================================" << endl;
+    cout << "  LIBARIAN VIEW: USER DATABASE          " << endl;
+    cout << "========================================" << endl;
+
+    if (inFile.is_open()) // Headers for clarity
+    {   
+        cout << left << setw(15) << "Username" << setw(15) << "NRIC" << setw(15) << "Name" << "Email" << endl;
+        cout << string(60, '-') << endl;
+
+        while (getline(inFile, line))
+        {
+            cout << line << endl;
+        }
+        inFile.close();  
+    }
+    else
+    {
+        cout << "Error: Could not open users.txt database." << endl;
+    }
+    cout << "======================================\n" << endl;
+}
+
 int Books::BMS_L(int RTS, const char& v){
     //call RTS status
     cout << "simulating rts: robot no." << RTS << "of venue:" << v << endl;
@@ -150,11 +176,17 @@ int Books::BMS(){
     int cat;
     bool sort;
     do{
-        cout << "BMS - Librarian\n1. View all books\n2. Check Specific Venue"
-        << "\n3. Check RTS\n4. Exit BMS\nAwaiting user input: ";
+        cout << "\nBMS - Librarian" << endl;
+        cout << "1. View all books" << endl;
+        cout << "2. Check Specific Venue" << endl;
+        cout << "3. Check RTS" << endl; 
+        cout << "4. View Registered User Accounts" << endl; 
+        cout << "5. Exit BMS" << endl; 
+        cout << "Awaiting user input:" << endl ;
+
         cin >> choice; //first choice, menu option
         cin.clear();   //clear all input
-        cin.ignore();
+        cin.ignore(1000, '\n');
         switch (choice){
             case '1':   //show all books across database          
                 cat = catSelect();
@@ -170,7 +202,10 @@ int Books::BMS(){
             case '3':
                 cout << "RTS simulated\n";
             case '4':   //Exit
-                cout << "exiting program." << endl;
+                Books::viewAllAccounts();
+                return 0;
+            case '5':
+                cout << "Existing BMS." << endl;
                 return 0;
             default:    //Error
                 cout << "Invalid option. Please try again: " << endl;
@@ -187,6 +222,6 @@ int Books::BMS(){
             else cout << "Invalid input. Please try again: ";
         }while((choice!='Y')&&(choice!='4'));
 
-    }while(choice!='4');
+    }while(choice!='5');
     return 0;
 };
