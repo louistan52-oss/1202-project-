@@ -78,10 +78,10 @@ void User_data::output_database() {
 }
 
 void User_data::input_database() {
-    string filename, key, value, user_creds;
+    string filename="users.txt", key, value, user_creds;
     ifstream inFile; 
-    cout << "Enter file name: ";
-    cin >> filename;
+    //cout << "Enter file name: ";
+    //cin >> filename;
     inFile.open(filename);
     if (!inFile.is_open()) {
         cout << "Error in opening file! Please try another file" << endl;

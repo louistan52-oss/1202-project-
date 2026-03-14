@@ -8,7 +8,7 @@
 #include <cctype> //convert type
 #include <fstream> //file handling
 #include <ctype.h> //char-related functions
-#include <algorithm>
+#include <algorithm> //alogirthm to sort data
 #include <vector> //dyanamic memory
 
 class Books{
@@ -31,7 +31,6 @@ class Books{
             int size[3] = {0,0,0}; //3 sizes to be used for iomanip -- text output manipulation
         };
         Books::BookData loadBooks(const char* Filename="LibraryBooks.txt", const char* venueFilter=nullptr);
-        void viewAllAccounts();
         void printHeader(BookData data);
 };
 #endif
