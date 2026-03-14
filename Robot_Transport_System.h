@@ -12,66 +12,60 @@
 
 using namespace std;
 
-// --- GLOBAL ATOMIC FLAG ---
-// We use 'atomic' because multiple threads check this flag simultaneously.
-// It prevents "data races" where one thread reads the flag while another writes to it.
+// --- GLOBAL FLAGS ---
+// 'atomic' ensures thread-safe access to this boolean without needing a mutex.
 extern atomic<bool> systemRunning;
 
+// State tracking for robot behavior.
 enum class State { IDLE, WORKING, CHARGING, REFILLING };
 
-// --- CLASS: SHELVES ---
-// Purpose: Minimal data structure to track individual shelf capacity.
+// --- CLASS: SHELVES (Component) ---
+// Minimal unit representing a single physical shelf.
 class Shelves {
 public:
-    int id;
-    int currentBooks;
-    int maxCapacity;
+    int id, currentBooks, maxCapacity;
     Shelves(int shelfId, int initialBooks, int cap = 4);
     bool isFull() const { return currentBooks >= maxCapacity; }
 };
 
-// --- BASE CLASS: LOCATION (Abstraction) ---
-// We use inheritance here to define common properties of any "place" in the system.
+// --- BASE CLASS: LOCATION (Inheritance Base) ---
+// Uses Abstraction to provide a blueprint for all physical sites.
 class Location {
 protected:
-    char idChar;            // Symbolic ID (A, B, C)
+    char idChar;            // Unique identifier (A, B, C)
     string locationName;
-    int stockAmount;        // Shared resource for the venue
-    string stockFilePath;   // File persistence path
-    
-    // 'mutable' allows us to lock the mutex even inside 'const' functions.
-    mutable mutex stockMtx; 
+    int stockAmount;        // Shared resource pool
+    string stockFilePath;
+    mutable mutex stockMtx; // 'mutable' allows locking in 'const' methods
 
 public:
     Location(char vid, string name, string sPath);
-    virtual ~Location() {} // Virtual destructor is CRITICAL for safe inheritance cleanup.
+    virtual ~Location() {} // Virtual destructor prevents memory leaks in derived classes.
 
-    // This function encapsulates the selection logic inside the object itself.
+    // Core Logic: Checks if the object matches the user's keystroke.
     bool identifyAndExecute(char input);
     
-    // 'pure virtual' (= 0) makes this an Abstract Class. 
-    // It forces Derived classes to implement their own display logic.
+    // Pure virtual: Every Venue must implement its own reporting logic.
     virtual void processRequest() = 0; 
     
     char getID() const { return idChar; }
     void saveStockToFile();
 };
 
-// --- CLASS: ROBOT (Worker) ---
+// --- CLASS: ROBOT (The Worker) ---
+// Handles the asynchronous background tasks.
 class Robot {
 private:
     string name;
     int battery;
-    int inventory;
-    State status;
-    mutable mutex rMtx; // Protects robot's internal state from UI thread interference.
+    int inventory = 0;
+    State status = State::IDLE;
+    mutable mutex rMtx; // Critical for protecting robot stats during UI refreshes.
 
 public:
     Robot(string n);
-    // Move constructor: required to put objects with mutexes into a std::vector.
-    Robot(Robot&& other) noexcept;
+    Robot(Robot&& other) noexcept; // Required for storing objects with mutexes in vectors.
     
-    // Function prototypes for background tasks
     void startWorking(vector<Shelves>& venueShelves, int& venueStock, mutex& sMtx, Location& loc);
     void startRefilling(int& venueStock, mutex& sMtx, Location& loc);
     void startCharging();
@@ -79,22 +73,32 @@ public:
     State getStatus() const;
 };
 
-// --- DERIVED CLASS: VENUE ---
-// Uses 'public' inheritance to represent a "is-a" relationship with Location.
+// --- DERIVED CLASS: VENUE (The Implementation) ---
+// Manages the relationship between shelves and robots at a specific site.
 class Venue : public Location {
 private:
-    vector<Shelves> allShelves; // Composition: Venue "has" multiple shelves.
+    vector<Shelves> allShelves;
     vector<Robot> robots;
     string shelfDataPath;
 
 public:
     Venue(char vid, string name, string stockFile, string shelfFile);
-    
-    // 'override' helps the compiler catch errors if the signature doesn't match the base.
-    void processRequest() override; 
-    
+    void processRequest() override; // Implements the specific display for a venue.
     void loadShelves();
     void saveShelves();
+};
+
+// --- SYSTEM CONTROLLER (The Manager) ---
+// New class that replaces the logic previously held in main().
+class SystemController {
+private:
+    vector<Location*> fleet; // Polymorphic collection of venues.
+
+public:
+    SystemController();  // Loads settings.
+    ~SystemController(); // Cleans memory.
+    void run();          // Entry point for the user loop.
+    void shutdown();     // Graceful thread termination.
 };
 
 #endif

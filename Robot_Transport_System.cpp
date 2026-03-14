@@ -2,130 +2,14 @@
 
 using namespace std::chrono_literals;
 
-// Define the global shutdown flag.
+// Global flag to tell background threads when to quit.
 atomic<bool> systemRunning(true);
 
-// --- LOCATION IMPLEMENTATION ---
-Location::Location(char vid, string name, string sPath) 
-    : idChar(vid), locationName(name), stockFilePath(sPath) {
-    // We load from file immediately in the constructor to ensure data persistence.
-    ifstream inFile(stockFilePath);
-    if (inFile.is_open()) { inFile >> stockAmount; inFile.close(); }
-    else { stockAmount = 100; } // Default if file doesn't exist.
-}
+// --- SYSTEM CONTROLLER: Initialization and Lifecycle ---
 
-// Logic: Instead of a 'switch' in main, each object decides if it should run.
-bool Location::identifyAndExecute(char input) {
-    if (toupper(input) == idChar) {
-        this->processRequest(); // Calls the specific Venue display logic.
-        return true;
-    }
-    return false;
-}
-
-void Location::saveStockToFile() {
-    // lock_guard automatically unlocks the mutex when it goes out of scope (RAII).
-    lock_guard<mutex> lock(stockMtx);
-    ofstream outFile(stockFilePath);
-    if (outFile.is_open()) { outFile << stockAmount; outFile.close(); }
-}
-
-// --- VENUE IMPLEMENTATION ---
-void Venue::processRequest() {
-    saveShelves();      // Save current state to disk before viewing.
-    saveStockToFile();
-
-    // UI Formatting using <iomanip> for clean alignment.
-    cout << "\n========================================" << endl;
-    cout << " STATUS REPORT: " << locationName << " (" << idChar << ")" << endl;
-    cout << "========================================" << endl;
-    cout << " [CENTRAL STOCK]: " << stockAmount << " books" << endl;
-    cout << "----------------------------------------" << endl;
-
-    int totalBooks = 0;
-    for (size_t i = 0; i < allShelves.size(); ++i) {
-        cout << "  Shelf " << (i + 1) << ": [";
-        // Visual indicator loop.
-        for (int b = 0; b < allShelves[i].maxCapacity; ++b) {
-            cout << (b < allShelves[i].currentBooks ? "■" : " ");
-        }
-        cout << "] (" << allShelves[i].currentBooks << "/4)" << endl;
-        totalBooks += allShelves[i].currentBooks;
-    }
-
-    cout << "----------------------------------------" << endl;
-    cout << "\n [ROBOT STATUS]:" << endl;
-    
-    bool active = false;
-    for (const auto& r : robots) {
-        r.display();
-        if (r.getStatus() != State::IDLE) active = true;
-    }
-
-    // AUTO-DEPLOYMENT LOGIC:
-    // If no robots are busy and shelves aren't full (20 books total), start one.
-    if (!active && totalBooks < 20) {
-        for (auto& r : robots) {
-            if (r.getStatus() == State::IDLE) {
-                // Pass refs and pointers so the thread works on the actual data, not a copy.
-                r.startWorking(allShelves, stockAmount, stockMtx, *this);
-                break;
-            }
-        }
-    }
-    cout << "========================================" << endl;
-}
-
-// --- ROBOT LOGIC & THREADING ---
-void Robot::startWorking(vector<Shelves>& venueShelves, int& venueStock, mutex& sMtx, Location& loc) {
-    { lock_guard<mutex> lock(rMtx); status = State::WORKING; }
-    
-    // We launch a Lambda function in a new thread.
-    // We pass dependencies by reference (&) to modify the Venue's data in the background.
-    thread t([this, &venueShelves, &venueStock, &sMtx, &loc]() {
-        while (systemRunning) {
-            this_thread::sleep_for(1s); // Simulate travel/placement time.
-            
-            lock_guard<mutex> lock(rMtx);
-            
-            // Search for the next available shelf.
-            Shelves* target = nullptr;
-            for (auto& s : venueShelves) if (!s.isFull()) { target = &s; break; }
-
-            if (!target) { status = State::IDLE; break; }
-            
-            // If robot is empty, chain to the Refilling process.
-            if (inventory <= 0) {
-                status = State::REFILLING;
-                // Detach another thread to handle the long refill trip.
-                thread(&Robot::startRefilling, this, ref(venueStock), ref(sMtx), ref(loc)).detach();
-                break;
-            }
-
-            target->currentBooks++;
-            inventory--;
-            battery -= 2;
-
-            // Low battery logic.
-            if (battery <= 20) {
-                status = State::CHARGING;
-                thread(&Robot::startCharging, this).detach();
-                break;
-            }
-        }
-    });
-    // .detach() allows the thread to run independently of the main menu loop.
-    t.detach();
-}
-
-// --- MAIN ENTRY POINT ---
-int main() {
-    srand(static_cast<unsigned int>(time(0)));
-    
-    // Polymorphic container: we store base pointers but they point to derived Venues.
-    vector<Location*> fleet;
-
-    // Config file allows us to change the system without recompiling.
+SystemController::SystemController() {
+    // Process: Load the configuration file to build the venue list.
+    // Reason: Decouples code from data; adding a venue only requires a text edit.
     ifstream configFile("venues_config.txt");
     if (configFile.is_open()) {
         char vChar; string vName, sFile, shFile;
@@ -134,7 +18,15 @@ int main() {
         }
         configFile.close();
     }
+}
 
+SystemController::~SystemController() {
+    // Process: Iterate through pointers and free memory.
+    // Reason: Prevents memory leaks (Heap management).
+    for (auto loc : fleet) delete loc;
+}
+
+void SystemController::run() {
     char userInput;
     while (true) {
         cout << "\nEnter Venue ID (A-C) or 'Q' to Quit: ";
@@ -143,7 +35,8 @@ int main() {
 
         bool matched = false;
         for (auto loc : fleet) {
-            // Polymorphism: loc identifies itself and calls its own processRequest.
+            // Process: Polymorphism.
+            // Reason: Let the object decide if it matches the input and run its own code.
             if (loc->identifyAndExecute(userInput)) {
                 matched = true;
                 break;
@@ -151,14 +44,94 @@ int main() {
         }
         if (!matched) cout << "ID '" << userInput << "' not recognized." << endl;
     }
+    shutdown();
+}
 
-    // GRACEFUL SHUTDOWN
-    // Setting this to false causes all while(systemRunning) loops to end.
+void SystemController::shutdown() {
+    // Process: Signal threads and wait briefly.
+    // Reason: Ensures robots finish their last write-to-file before the program closes.
     systemRunning = false;
+    this_thread::sleep_for(500ms);
+}
+
+// --- VENUE: Display and Auto-Management ---
+
+void Venue::processRequest() {
+    saveShelves();      // Save current status to file.
+    saveStockToFile();  // Save stock levels to file.
+
+    cout << "\n--- " << locationName << " Report ---" << endl;
+    cout << " Central Stock: " << stockAmount << " units" << endl;
     
-    // Memory management: clean up the pointers created with 'new'.
-    for (auto loc : fleet) delete loc;
+    int totalOnShelves = 0;
+    for (auto& s : allShelves) {
+        cout << " Shelf " << s.id << ": [" << s.currentBooks << "/4] ";
+        totalOnShelves += s.currentBooks;
+    }
+    cout << "\n----------------------------------------" << endl;
+
+    bool active = false;
+    for (auto& r : robots) {
+        r.display();
+        if (r.getStatus() != State::IDLE) active = true;
+    }
+
+    // Auto-Deployment:
+    // If no one is working and shelves need books, trigger an Idle robot.
+    if (!active && totalOnShelves < 20) {
+        for (auto& r : robots) {
+            if (r.getStatus() == State::IDLE) {
+                r.startWorking(allShelves, stockAmount, stockMtx, *this);
+                break;
+            }
+        }
+    }
+}
+
+// --- ROBOT: Background Threading ---
+
+void Robot::startWorking(vector<Shelves>& venueShelves, int& venueStock, mutex& sMtx, Location& loc) {
+    { lock_guard<mutex> lock(rMtx); status = State::WORKING; }
     
-    this_thread::sleep_for(500ms); // Brief pause to let threads exit before OS kills them.
+    // Process: Lambda Threading with Detach.
+    // Reason: Allows the robot to "think" and "move" without blocking the user's menu.
+    thread t([this, &venueShelves, &venueStock, &sMtx, &loc]() {
+        while (systemRunning) {
+            this_thread::sleep_for(1s); // Simulated labor time.
+            
+            lock_guard<mutex> lock(rMtx); // Protect robot data during update.
+            
+            // Logic: Find first available shelf.
+            Shelves* target = nullptr;
+            for (auto& s : venueShelves) if (!s.isFull()) { target = &s; break; }
+
+            if (!target) { status = State::IDLE; break; } // Work finished.
+
+            if (inventory <= 0) {
+                status = State::REFILLING;
+                // Chain: If empty, start a new refill thread and exit this one.
+                thread(&Robot::startRefilling, this, ref(venueStock), ref(sMtx), ref(loc)).detach();
+                break;
+            }
+
+            target->currentBooks++;
+            inventory--;
+            battery -= 2;
+        }
+    });
+    t.detach();
+}
+
+// --- MAIN: The Clean Entry Point ---
+
+int main() {
+    // Process: Seed random for unique battery levels each run.
+    srand(static_cast<unsigned int>(time(0)));
+
+    // Process: Instantiate the controller.
+    // Reason: All system complexity is hidden inside the SystemController class.
+    SystemController controller;
+    controller.run();
+
     return 0;
 }
