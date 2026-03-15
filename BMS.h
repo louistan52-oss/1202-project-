@@ -31,7 +31,7 @@ class Books{
             int size[3] = {0,0,0}; //3 sizes to be used for iomanip -- text output manipulation
         };
         Books::BookData loadBooks(const char* Filename="LibraryBooks.txt", const char* venueFilter=nullptr);
-        void printHeader(BookData data);
+        void printHeader(BookData data, bool v=false);
 };
 #endif
 

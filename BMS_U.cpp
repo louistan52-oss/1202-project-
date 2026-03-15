@@ -14,7 +14,7 @@ void BookManagementUser::updateDatabase(string serial, Books::BookData data) {
             }
             else {
                 //cout << "Book being written back into file: " << data.book[i].getTitle() << endl;
-                BMS << data.book[i].getSerial() << "\t" << data.book[i].getTitle() << "\t" << data.book[i].getGenre() << "\t" << data.book[i].getVenue();
+                BMS << data.book[i].getSerial() << "," << data.book[i].getTitle() << "," << data.book[i].getGenre() << "," << data.book[i].getVenue();
             }
             if ((i+1)>=data.book.size()) BMS.close();
             else BMS << endl;
@@ -28,13 +28,33 @@ void BookManagementUser::showErrorMessage(string message) {
 
 void BookManagementUser::startSession() {
     Books b;
-    char scanAnother = 'Y';
+    char scanAnother = 'Y', venue;
     string currentSerial;
     cout << "--- System Started ---" << endl;
-
+    cout << "Please confirm the location you are going to:\nA\tB\tC\nYour Venue: ";
+    do{
+        cin >> venue;
+        venue = toupper(venue);
+        if ((venue=='A')||(venue=='B')||(venue=='C')) break;
+        else{
+            cout << "Invalid input. Please try again.\n";
+            cin.clear();
+            cin.ignore();
+        }
+    }while(!(cin >> venue)||(venue!='A')||(venue!='B')||(venue!='C'));
     while (scanAnother=='Y') {
-        Books::BookData data = b.loadBooks("LibraryBooks.txt");
-        b.BMS_L(4,true);
+        Books::BookData data = b.loadBooks("LibraryBooks.txt", &venue);
+        switch (venue){
+            case 'A':
+                b.BMS_L('A',4, true);
+                break;
+            case 'B':
+                b.BMS_L('B',4, true);
+                break;
+            case 'C':
+                b.BMS_L('C',4, true);
+                break;
+        }
         if (scannedBooks.size() >= MAX_BOOKS) {
             showErrorMessage("Maximum book limit (2) reached!");
             printReceipt();

@@ -17,20 +17,19 @@ Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
         getline(BMS,line); //while BMS is read into line
         ss.str(line); //sets line for string manipulation
         if (line.empty()) continue;
-        ss >> serial;//first set of data is fed into serial                    
-        ss.ignore(); //skips any extra text, like space
-        getline(ss, title, '\t');   //sets second set of read data to title, ends when reader encounters \t
-        getline(ss, genre, '\t');   //repeat for genre and venue
+        getline(ss,serial,','); 
+        getline(ss, title, ',');   //sets second set of read data to title, ends when reader encounters ,
+        getline(ss, genre, ',');   //repeat for genre and venue
         getline(ss, venue, '\n');
 
         // if venueFilter is set, skip non-matching venues
         if (venueFilter && venue[0] != *venueFilter) continue;
 
         data.book.push_back(Books(title, genre, serial, venue)); //vector function: since book is a declared class of Books, will need to use the Books constructor to add to book. pushback will add to the back of the current <vector>Books book
-        if (title.length()+5>data.size[0]) data.size[0]=title.length()+5; //iomanip: checks the longest length and sets it to be the size of the setw later
-        if (genre.length()+5>data.size[1]) data.size[1]=genre.length()+5; //repeat for genre. only these two needed as they have varying lengths
+        if (title.length()>=data.size[0]) data.size[0]=title.length()+8; //iomanip: checks the longest length and sets it to be the size of the setw later
+        if (genre.length()>=data.size[1]) data.size[1]=genre.length()+8; //repeat for genre. only these two needed as they have varying lengths
     }
-    data.size[2] = to_string(data.book.size()).length()+5;
+    data.size[2] = to_string(data.book.size()).length()+4;
     BMS.close();
     return data;
 };
@@ -50,7 +49,7 @@ int Books::BMS_L(int cat, bool sort){ //input category, sort
 
     data.size[2]=to_string(data.book.size()).length()+5;  //iomanip: reads longest length of book size for serial number. i.e. legnth of number 10 is 2, so 2+5 spaces away is the next printed text
     
-    Books::printHeader(data);
+    Books::printHeader(data, true);
 
     for (int i=0; i<data.book.size();i++){   //as long as i is less than book size, continue to print out values in book.
         cout << left << setw(data.size[2]) << i+1 << setw(data.size[1]) << data.book[i].genre << setw(15) 
@@ -61,8 +60,8 @@ int Books::BMS_L(int cat, bool sort){ //input category, sort
     return 0;
 };
 
-void Books::printHeader(Books::BookData data){
-    if ((data.book[0].getTitle() == "\0")){
+void Books::printHeader(Books::BookData data, bool v){
+    if (!v){
         cout << left << setw(data.size[2]) << "No." << setw(data.size[1]) << "Genre" << setw(15) << "Serial"
         << setw(data.size[0]) << "Title" << setw(5) << endl; //prints category of output text according to max length of each string. fixed values for others
     }
@@ -86,8 +85,7 @@ int Books::BMS_L(const char& v, int cat, bool sort){ //input: venue
 
     cout << "Venue " << v << " Database" << endl; 
     data.size[2]=to_string(data.book.size()).length()+5;
-    cout << left << setw(data.size[2]) << "No." << setw(data.size[1]) << "Genre" << setw(15) << "Serial"
-    << setw(data.size[0]) << "Title"<< endl;
+    Books::printHeader(data);
     for (int i=0; i<data.book.size();i++){   //displays books at the venue
         cout << left << setw(data.size[2]) << i+1 << setw(data.size[1]) << data.book[i].genre << setw(15) 
         << data.book[i].serial << setw(data.size[0]) << data.book[i].title << endl;

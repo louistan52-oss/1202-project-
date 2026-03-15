@@ -142,7 +142,7 @@ void program() {
                 log_in = dataObj.login();
                 if (log_in == "T0321927A") // Libaraian login
                 {
-                    cout << "Welcom Librarian!" << endl;
+                    cout << "Welcome Librarian!" << endl;
                     lib.BMS();
                 }
                 else if (log_in != "")
@@ -157,7 +157,8 @@ void program() {
                 if (log_in != "")
                 {
                     cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                    QueueUser(); // Redirect to Queue Management
+                    //QueueUser(); // Redirect to Queue Management exclude until code is integrated with User Account.
+                    session.startSession();
                 }
             }
         }
