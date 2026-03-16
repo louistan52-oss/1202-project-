@@ -1,0 +1,3 @@
+A Venue_A vA_stock.txt vA_shelves.txt
+B Venue_B vB_stock.txt vB_shelves.txt
+C Venue_C vC_stock.txt vC_shelves.txt
