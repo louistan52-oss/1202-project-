@@ -2,6 +2,8 @@
 #include "Robot_Transport_System.h"
 using namespace std;
 
+SystemController SC;
+
 Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
     Books::BookData data;
     stringstream ss;//stringstream to allow cin/cout of string related variables
@@ -15,20 +17,19 @@ Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
         getline(BMS,line); //while BMS is read into line
         ss.str(line); //sets line for string manipulation
         if (line.empty()) continue;
-        ss >> serial;//first set of data is fed into serial                    
-        ss.ignore(); //skips any extra text, like space
-        getline(ss, title, '\t');   //sets second set of read data to title, ends when reader encounters \t
-        getline(ss, genre, '\t');   //repeat for genre and venue
+        getline(ss,serial,','); 
+        getline(ss, title, ',');   //sets second set of read data to title, ends when reader encounters ,
+        getline(ss, genre, ',');   //repeat for genre and venue
         getline(ss, venue, '\n');
 
         // if venueFilter is set, skip non-matching venues
         if (venueFilter && venue[0] != *venueFilter) continue;
 
         data.book.push_back(Books(title, genre, serial, venue)); //vector function: since book is a declared class of Books, will need to use the Books constructor to add to book. pushback will add to the back of the current <vector>Books book
-        if (title.length()+5>data.size[0]) data.size[0]=title.length()+5; //iomanip: checks the longest length and sets it to be the size of the setw later
-        if (genre.length()+5>data.size[1]) data.size[1]=genre.length()+5; //repeat for genre. only these two needed as they have varying lengths
+        if (title.length()>=data.size[0]) data.size[0]=title.length()+8; //iomanip: checks the longest length and sets it to be the size of the setw later
+        if (genre.length()>=data.size[1]) data.size[1]=genre.length()+8; //repeat for genre. only these two needed as they have varying lengths
     }
-    data.size[2] = to_string(data.book.size()).length()+5;
+    data.size[2] = to_string(data.book.size()).length()+4;
     BMS.close();
     return data;
 };
@@ -48,7 +49,7 @@ int Books::BMS_L(int cat, bool sort){ //input category, sort
 
     data.size[2]=to_string(data.book.size()).length()+5;  //iomanip: reads longest length of book size for serial number. i.e. legnth of number 10 is 2, so 2+5 spaces away is the next printed text
     
-    Books::printHeader(data);
+    Books::printHeader(data, true);
 
     for (int i=0; i<data.book.size();i++){   //as long as i is less than book size, continue to print out values in book.
         cout << left << setw(data.size[2]) << i+1 << setw(data.size[1]) << data.book[i].genre << setw(15) 
@@ -59,8 +60,8 @@ int Books::BMS_L(int cat, bool sort){ //input category, sort
     return 0;
 };
 
-void Books::printHeader(Books::BookData data){
-    if ((data.book[0].getTitle() == "\0")){
+void Books::printHeader(Books::BookData data, bool v){
+    if (!v){
         cout << left << setw(data.size[2]) << "No." << setw(data.size[1]) << "Genre" << setw(15) << "Serial"
         << setw(data.size[0]) << "Title" << setw(5) << endl; //prints category of output text according to max length of each string. fixed values for others
     }
@@ -84,8 +85,7 @@ int Books::BMS_L(const char& v, int cat, bool sort){ //input: venue
 
     cout << "Venue " << v << " Database" << endl; 
     data.size[2]=to_string(data.book.size()).length()+5;
-    cout << left << setw(data.size[2]) << "No." << setw(data.size[1]) << "Genre" << setw(15) << "Serial"
-    << setw(data.size[0]) << "Title"<< endl;
+    Books::printHeader(data);
     for (int i=0; i<data.book.size();i++){   //displays books at the venue
         cout << left << setw(data.size[2]) << i+1 << setw(data.size[1]) << data.book[i].genre << setw(15) 
         << data.book[i].serial << setw(data.size[0]) << data.book[i].title << endl;
@@ -94,37 +94,79 @@ int Books::BMS_L(const char& v, int cat, bool sort){ //input: venue
     return 0;
 };
 
-void Books::viewAllAccounts()
-{
-    ifstream inFile("users.txt");
-    string line;
-    cout << "\n======================================" << endl;
-    cout << "  LIBARIAN VIEW: USER DATABASE          " << endl;
-    cout << "========================================" << endl;
-
-    if (inFile.is_open()) // Headers for clarity
-    {   
-        cout << left << setw(15) << "Username" << setw(15) << "NRIC" << setw(15) << "Name" << "Email" << endl;
-        cout << string(60, '-') << endl;
-
-        while (getline(inFile, line))
-        {
-            cout << line << endl;
-        }
-        inFile.close();  
-    }
-    else
-    {
-        cout << "Error: Could not open users.txt database." << endl;
-    }
-    cout << "======================================\n" << endl;
-}
-
 int Books::BMS_L(int RTS, const char& v){
     //call RTS status
     cout << "simulating rts: robot no." << RTS << "of venue:" << v << endl;
     return 0;
 };
+
+void Books::viewAllAccounts()
+{
+    ifstream inFile("users.txt");
+    string line;
+    struct UserRow { string nric, name, email, password; };
+    vector<UserRow> rowData;
+
+    int maxName = 13, maxEmail = 23;
+    if (!inFile.is_open()) return;
+
+    while (getline(inFile, line))
+    {
+        if(line.empty()) continue;
+        stringstream ss(line);
+        UserRow row;
+        
+        getline(ss, row.nric, '|'); //Matching "|" delimiter used in User_data::output_database to ensure cross-module data consistency
+        getline(ss, row.name, '|');
+        getline(ss, row.email, '|');
+        getline(ss, row.password);
+
+        // Trimming for length check
+        auto trim = [](string& s)
+        {
+            size_t first = s.find_first_not_of(" ");
+            if (string::npos == first) return;
+            size_t last = s.find_last_not_of(" ");
+            s = s.substr(first, (last - first + 1));
+        };
+
+        trim(row.nric);
+        trim(row.name);
+        trim(row.email);
+        trim(row.password);
+
+        if ((int)row.name.length() > maxName) maxName = row.name.length();
+        if ((int)row.email.length() > maxEmail) maxEmail = row.email.length();
+
+        rowData.push_back(row);
+
+    }
+    inFile.close();
+
+    int nricW = 11; // Define the width variables BEFORE the second pass
+    int nameW = maxName + 2;
+    int emailW = maxEmail + 2;
+    cout << endl;
+    cout << string(nricW + nameW + emailW + 25, '=') << endl; // Calulated lendths to draw a seperator lines creates a clean table for reading
+    cout << "LIBARIAN VIEW: USER DATABASE          " << endl;
+    cout << string(nricW + nameW + emailW + 25, '=') << endl;
+    cout << left << setw(11) << "NRIC" << " | " 
+         << setw(maxName + 2) << "Name" << " | " 
+         << setw(maxEmail + 2) << "Email" << " | "
+         << "Password" << endl;
+    cout << string(nricW + nameW + emailW + 25, '-') << endl;
+
+    // Using 'const auto&' prevents unnecessary copying of 'UserRow' objects
+    for (const auto& row : rowData) {
+            cout << left << setw(nricW) << row.nric << " | "
+                 << setw(nameW) << row.name << " | "
+                 << setw(emailW) << row.email << " | "
+                 << row.password << endl;
+    }
+
+    cout << string(nricW + nameW + emailW + 25, '=') << endl;
+}
+
 
 int catSelect(){
     int cat;
@@ -176,7 +218,7 @@ int Books::BMS(){
     int cat;
     bool sort;
     do{
-        cout << "\nBMS - Librarian" << endl;
+        cout << "\n=== BMS - Librarian ===" << endl;
         cout << "1. View all books" << endl;
         cout << "2. Check Specific Venue" << endl;
         cout << "3. Check RTS" << endl; 
@@ -201,11 +243,13 @@ int Books::BMS(){
                 break;
             case '3':
                 cout << "RTS simulated\n";
-            case '4':   //Exit
+                SC.run();
+                break;
+            case '4': 
                 Books::viewAllAccounts();
-                return 0;
-            case '5':
-                cout << "Existing BMS." << endl;
+                break;
+            case '5': //Exit
+                cout << "Exiting BMS." << endl;
                 return 0;
             default:    //Error
                 cout << "Invalid option. Please try again: " << endl;
@@ -218,9 +262,9 @@ int Books::BMS(){
             if (choice=='y' || choice == 'n') choice = toupper(choice); //changes input to upper case if y or n. otherwise proceed
             cin.clear(); //clears input
             if (choice == 'Y') break; //ends loop and continue using BMS
-            else if (choice == 'N') choice = '4'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
+            else if (choice == 'N') choice = '5'; //ends loop and forces exit state (choice = 4 to exit while loop of parent function)
             else cout << "Invalid input. Please try again: ";
-        }while((choice!='Y')&&(choice!='4'));
+        }while((choice!='Y')&&(choice!='5'));
 
     }while(choice!='5');
     return 0;
