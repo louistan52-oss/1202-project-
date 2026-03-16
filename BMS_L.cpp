@@ -4,95 +4,136 @@ using namespace std;
 
 SystemController SC;
 
-Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter){
-    Books::BookData data;
-    stringstream ss;//stringstream to allow cin/cout of string related variables
-    ifstream BMS(Filename); //opens text file
-    string title, genre, serial, venue, line;  //declaration of variables
+// Helper function to remove leading / trailing whitespcace, tabs, and newlines
+void trim(string& s) { // Clean data parsing from text file
+    size_t first = s.find_first_not_of(" \t\r\n");
+    if (string::npos == first) return;
+    size_t last = s.find_last_not_of(" \t\r\n");
+    s = s.substr(first, (last - first + 1));
+}
 
-    if (!BMS) { cout << "error opening file!\n"; return data; } //if unable to find or open file, returns error
+Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter) { // Formatting and dynamically calculates column widths
+    Books::BookData data; 
+    ifstream BMS(Filename); //Loads book data from a text file
+    string line;
 
-    for (int i=0;!BMS.eof(); i++){
-        ss.clear(); 
-        getline(BMS,line); //while BMS is read into line
-        ss.str(line); //sets line for string manipulation
+    // Default starting widths for columns
+    data.size[0] = 10; // Min Title Width
+    data.size[1] = 10; // Min Genre Width
+
+    if (!BMS) { cout << "Error opening file!\n"; return data; } //if unable to find or open file, returns error
+
+    while (getline(BMS, line)) {
         if (line.empty()) continue;
-        getline(ss,serial,','); 
-        getline(ss, title, ',');   //sets second set of read data to title, ends when reader encounters ,
-        getline(ss, genre, ',');   //repeat for genre and venue
-        getline(ss, venue, '\n');
+        stringstream ss(line);
+        string serial, title, genre, venue;
 
-        // if venueFilter is set, skip non-matching venues
-        if (venueFilter && venue[0] != *venueFilter) continue;
+        // Reading using TAB delimiter '\t'
+        getline(ss, serial, '\t');
+        getline(ss, title, '\t'); //sets second set of read data to title, ends when reader 
+        getline(ss, genre, '\t'); //repeat for genre and venue
+        getline(ss, venue);
 
-        data.book.push_back(Books(title, genre, serial, venue)); //vector function: since book is a declared class of Books, will need to use the Books constructor to add to book. pushback will add to the back of the current <vector>Books book
-        if (title.length()>=data.size[0]) data.size[0]=title.length()+8; //iomanip: checks the longest length and sets it to be the size of the setw later
-        if (genre.length()>=data.size[1]) data.size[1]=genre.length()+8; //repeat for genre. only these two needed as they have varying lengths
+        trim(serial); trim(title); trim(genre); trim(venue); // Clean data for comparison and display
+
+        if (venueFilter && venue[0] != *venueFilter) continue; // Filter by venue if specific venue view is requested (Option 2)
+
+        data.book.push_back(Books(title, genre, serial, venue)); // Store book object in vector
+
+        // Update max lengths for dynamic alignment
+        if ((int)title.length() > data.size[0]) data.size[0] = title.length(); 
+        if ((int)genre.length() > data.size[1]) data.size[1] = genre.length(); 
     }
-    data.size[2] = to_string(data.book.size()).length()+4;
     BMS.close();
     return data;
-};
+}
 
-int Books::BMS_L(int cat, bool sort){ //input category, sort
+int Books::BMS_L(int cat, bool sort) { // Display View: All books
+    // Supports sorting by category (Serial, Genre, Title) and book ordering (Ascending / Descending)
+    BookData data = loadBooks("LibraryBooks.txt");  
 
-   BookData data = loadBooks("LibraryBooks.txt");
-    
-    auto cmp = [&](const Books& a, const Books& b) -> bool {
+    auto cmp = [&](const Books& a, const Books& b) -> bool { // Lambda for custom sorting based on user selection
         string fieldA, fieldB;
-        if (cat == 2) { fieldA = a.genre;  fieldB = b.genre; }
-        if (cat == 3) { fieldA = a.title;  fieldB = b.title; } 
-        if (cat == 4 || cat == 1) { fieldA = a.serial; fieldB = b.serial;}        
+        if (cat == 2) { fieldA = a.genre; fieldB = b.genre; }
+        else if (cat == 3) { fieldA = a.title; fieldB = b.title; }
+        else { fieldA = a.serial; fieldB = b.serial; }
         return sort ? (fieldA < fieldB) : (fieldA > fieldB);
     };
     std::sort(data.book.begin(), data.book.end(), cmp);
 
-    data.size[2]=to_string(data.book.size()).length()+5;  //iomanip: reads longest length of book size for serial number. i.e. legnth of number 10 is 2, so 2+5 spaces away is the next printed text
-    
-    Books::printHeader(data, true);
+    Books::printHeader(data, true); // Render table header
 
-    for (int i=0; i<data.book.size();i++){   //as long as i is less than book size, continue to print out values in book.
-        cout << left << setw(data.size[2]) << i+1 << setw(data.size[1]) << data.book[i].genre << setw(15) 
-        << data.book[i].serial << setw(data.size[0]) <<  data.book[i].title
-        << setw(5) << data.book[i].venue << endl;
+    int genreW = data.size[1] + 3;
+    int titleW = data.size[0] + 3;
+
+    for (int i = 0; i < data.book.size(); i++) { // Each iteration prints a table row
+        cout << left << setw(5) << i + 1 << " | "
+             << setw(genreW) << data.book[i].genre << " | "
+             << setw(15) << data.book[i].serial << " | "
+             << setw(titleW) << data.book[i].title << " | "
+             << data.book[i].venue << endl;
     }
+
+    int totalWidth = 5 + genreW + 15 + titleW + 8 + 10; // Dynamic border closure based on column widths
+    cout << string(totalWidth, '=') << endl;
     cout << data.book.size() << " Books remaining" << endl;
     return 0;
-};
+}
 
-void Books::printHeader(Books::BookData data, bool v){
-    if (!v){
-        cout << left << setw(data.size[2]) << "No." << setw(data.size[1]) << "Genre" << setw(15) << "Serial"
-        << setw(data.size[0]) << "Title" << setw(5) << endl; //prints category of output text according to max length of each string. fixed values for others
-    }
-    else{
-        cout << left << setw(data.size[2]) << "No." << setw(data.size[1]) << "Genre" << setw(15) << "Serial"
-        << setw(data.size[0]) << "Title" << setw(5) << "Venue" << endl; //prints category of output text according to max length of each string. fixed values for others
-    }
-};
+void Books::printHeader(Books::BookData data, bool showVenue) { // Generates standardized table header for book views
+    int noW = 5;
+    int genreW = data.size[1] + 3;
+    int serialW = 15;
+    int titleW = data.size[0] + 3;
+    int venueW = 8;
+    // Calculate total line width based on column visibility
+    int totalWidth = noW + genreW + serialW + titleW + (showVenue ? (venueW + 3) : 0) + 7;
 
-int Books::BMS_L(const char& v, int cat, bool sort){ //input: venue
+    cout << endl << string(totalWidth, '=') << endl;
+    cout << "LIBRARIAN VIEW: BOOK DATABASE" << endl;
+    cout << string(totalWidth, '=') << endl;
+
+    cout << left << setw(noW) << "No." << " | "
+         << setw(genreW) << "Genre" << " | "
+         << setw(serialW) << "Serial" << " | "
+         << setw(titleW) << "Title";
+
+    if (showVenue) cout << " | " << setw(venueW) << "Venue";
+    cout << endl << string(totalWidth, '-') << endl;
+}
+
+// Display View: Books by specific Venue
+int Books::BMS_L(const char& v, int cat, bool sort) {
     BookData data = loadBooks("LibraryBooks.txt", &v);
-
-    auto cmp = [&](const Books& a, const Books& b) -> bool {
+    
+    auto cmp = [&](const Books& a, const Books& b) -> bool { // Lambda for custom sorting based on user selection
         string fieldA, fieldB;
-        if (cat == 2) { fieldA = a.genre;  fieldB = b.genre; }
-        if (cat == 3) { fieldA = a.title;  fieldB = b.title; } 
-        if (cat == 4 || cat == 1) { fieldA = a.serial; fieldB = b.serial;}        
+        if (cat == 2) { fieldA = a.genre; fieldB = b.genre; }
+        else if (cat == 3) { fieldA = a.title; fieldB = b.title; }
+        else { fieldA = a.serial; fieldB = b.serial; }
         return sort ? (fieldA < fieldB) : (fieldA > fieldB);
     };
     std::sort(data.book.begin(), data.book.end(), cmp);
 
-    cout << "Venue " << v << " Database" << endl; 
-    data.size[2]=to_string(data.book.size()).length()+5;
-    Books::printHeader(data);
-    for (int i=0; i<data.book.size();i++){   //displays books at the venue
-        cout << left << setw(data.size[2]) << i+1 << setw(data.size[1]) << data.book[i].genre << setw(15) 
-        << data.book[i].serial << setw(data.size[0]) << data.book[i].title << endl;
+    cout << "\nDisplaying Books for Venue: " << v << endl;
+    Books::printHeader(data, false); // Don't show venue col since we filtered for it
+
+    int genreW = data.size[1] + 3;
+    int titleW = data.size[0] + 3;
+
+    for (int i = 0; i < data.book.size(); i++) { //displays books at the venue
+        cout << left << setw(5) << i + 1 << " | "
+             << setw(genreW) << data.book[i].genre << " | "
+             << setw(15) << data.book[i].serial << " | "
+             << setw(titleW) << data.book[i].title << endl;
     }
-    cout << data.book.size() << " Books in Venue " << v << endl;
+
+    // Calculate width without the venue column (+7 for separators, +3 for base)
+    int totalWidth = 5 + genreW + 15 + titleW + 7; 
+    cout << string(totalWidth, '=') << endl;
+    cout << data.book.size() << " Books in Venue " << v << " remaining" << endl;
     return 0;
-};
+}
 
 int Books::BMS_L(int RTS, const char& v){
     //call RTS status
@@ -100,7 +141,7 @@ int Books::BMS_L(int RTS, const char& v){
     return 0;
 };
 
-void Books::viewAllAccounts()
+void Books::viewAllAccounts() // Display user account database table
 {
     ifstream inFile("users.txt");
     string line;
@@ -110,7 +151,7 @@ void Books::viewAllAccounts()
     int maxName = 13, maxEmail = 23;
     if (!inFile.is_open()) return;
 
-    while (getline(inFile, line))
+    while (getline(inFile, line)) // Read data from users.txt and calculate required widths
     {
         if(line.empty()) continue;
         stringstream ss(line);
@@ -142,7 +183,7 @@ void Books::viewAllAccounts()
 
     }
     inFile.close();
-
+    // Table creation using IO manipulators
     int nricW = 11; // Define the width variables BEFORE the second pass
     int nameW = maxName + 2;
     int emailW = maxEmail + 2;
@@ -170,7 +211,7 @@ void Books::viewAllAccounts()
 
 int catSelect(){
     int cat;
-    cout << "Choose specific category:\n1. View All\n2. View By Genre\n3. View by title\n4. View by serial no.\nChoice:";
+    cout << "\nChoose specific category:\n1. View All\n2. View By Genre\n3. View by title\n4. View by serial no.\nChoice: ";
     while(!(cin >> cat) || cat < 1 || cat > 5){   
         cout << "Invalid Input. Please try again: ";
         cin.clear();
@@ -182,7 +223,7 @@ int catSelect(){
 int sortSelect(){
     int sort;
     char choice;
-    cout <<"Sort in Ascending Order? Y/N: ";
+    cout <<"\nSort in Ascending Order? Y/N: ";
     
     do{
         cin >> choice;
@@ -200,7 +241,7 @@ int sortSelect(){
 
 char venueSelect(){
     char choice;
-    cout <<"Select among these venue(s):\nA\tB\tC\n";
+    cout <<"\nSelect among these venue(s):\nA\tB\tC\n";
     do{
         cout << "Awaiting user input: ";
         
@@ -256,8 +297,8 @@ int Books::BMS(){
                 break;
         }
         
-        do{
-            cout << "Continue using BMS? (Y/N): ";  //asks if librarian wants to continue using BMS
+        do{ // Loop to allow multiple operations before logout
+            cout << "\nContinue using BMS? (Y/N): ";  //asks if librarian wants to continue using BMS
             cin >> choice; //input choice
             if (choice=='y' || choice == 'n') choice = toupper(choice); //changes input to upper case if y or n. otherwise proceed
             cin.clear(); //clears input
