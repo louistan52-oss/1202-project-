@@ -8,77 +8,79 @@
 #include <mutex>
 #include <atomic>
 #include <fstream>
+#include <iomanip>
+#include <algorithm>
+#include <chrono>
 
 using namespace std;
 
-// --- STEP 1: GLOBAL EXTERNAL FLAG ---
-// 'extern' tells the compiler that 'systemRunning' is defined in the .cpp file.
-// This allows background threads to check this flag to see if they should stop.
 extern atomic<bool> systemRunning;
-
-// State tracking for the robot's finite state machine logic.
 enum class State { IDLE, WORKING, CHARGING, REFILLING };
 
-// --- STEP 2: SHELVES CLASS (Composition Element) ---
 class Shelves {
 public:
-    int currentBooks;
-    int maxCapacity;
-    string filePath; // Path to the .txt file storing the shelf count
-
-    Shelves(string path, int cap = 20);
-    void saveToFile();           // Writes currentBooks to the .txt file
-    bool needsRestock() const;    // Returns true if shelf isn't full
+    int id, currentBooks, maxCapacity;
+    Shelves(int shelfId, int initialBooks, int cap = 4);
+    bool isFull() const { return currentBooks >= maxCapacity; }
 };
 
-// --- STEP 3: LOCATION CLASS (Base Class for Inheritance) ---
 class Location {
 protected:
-    int id;
+    char idChar; 
     string locationName;
-    int stockAmount;      // Total books available in the "warehouse" for this location
-    string stockFilePath; // Path to the .txt file storing the stock amount
-    mutable mutex stockMtx; // Protects stockAmount during simultaneous refills
+    int stockAmount;
+    string stockFilePath;
+    mutable mutex stockMtx;
 
 public:
-    Location(int vid, string name, string sPath);
-    virtual ~Location();         // Virtual destructor ensures derived classes clean up correctly
-    void saveStockToFile();      // Writes stockAmount to the .txt file
+    Location(char vid, string name, string sPath);
+    virtual ~Location() {}
+    bool identifyAndExecute(char input);
+    virtual void processRequest() = 0; 
+    void saveStockToFile();
 };
 
-// --- STEP 4: ROBOT CLASS (The Worker) ---
 class Robot {
 private:
     string name;
     int battery;
-    int inventory = 0;           // Books currently held by the robot
+    int inventory = 0;
     State status = State::IDLE;
-    mutable mutex rMtx;          // Protects robot's internal data (battery, state)
+    mutable mutex rMtx;
 
 public:
     Robot(string n);
-    Robot(Robot&& other) noexcept; // Move constructor needed to store robots in a vector
-    
-    string getName() const;
-    State getStatus() const;
-    
-    // Background execution methods
-    void startWorking(Shelves& venueShelves, int& venueStock, mutex& sMtx, Location& loc);
+    Robot(Robot&& other) noexcept;
+    void startWorking(vector<Shelves>& venueShelves, int& venueStock, mutex& sMtx, Location& loc);
     void startRefilling(int& venueStock, mutex& sMtx, Location& loc);
     void startCharging();
     void display() const;
+    State getStatus() const;
 };
 
-// --- STEP 5: VENUE CLASS (Derived Class) ---
-// Inherits from Location. A Venue "is-a" Location and "has-a" Shelf + Robots.
 class Venue : public Location {
 private:
-    Shelves venueShelves;
+    vector<Shelves> allShelves;
     vector<Robot> robots;
+    string shelfDataPath;
 
 public:
-    Venue(int vid, string name, string stockFile, string shelfFile, int shelfCap);
-    void refreshVenue(); // Updates the UI and triggers the auto-deployment logic
+    Venue(char vid, string name, string stockFile, string shelfFile);
+    void processRequest() override; 
+    void loadShelves();
+    void saveShelves();
+};
+
+class SystemController {
+private:
+    vector<Location*> fleet;
+    void createDummyEnvironment();
+
+public:
+    SystemController();
+    ~SystemController();
+    void run();
+    void shutdown();
 };
 
 #endif
