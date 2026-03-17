@@ -1,15 +1,15 @@
-#include "BMS.h"
-#include "Users.h"
-#include "Robot_Transport_System.h"
-
-using namespace std;
-
-SystemController sc;
-
-int main(){
-    srand(static_cast<unsigned int>(time(0)));
-    //cout << "Initializing Robot Transport System... Please type Q when done:\n";
-    //sc.run();
-    USERS::program();
-    return 0;
-}
+11111111	L'Stranger	Mystery	A
+22222222	Why not?	Comedy	B
+33333333	Dream of the Red Chamber	Horror	C
+12345678	Crime and Punishment	Tragedy	A
+23454567	Goethe's Faust	Educational	B
+12309484	Metamorphosis	Comedy	C
+98765432	Moby-Dick; Or The Whale	Comedy	C
+00066600	The Divine Comedy	Romance	B
+91280736	Wuthering Heights	Tragedy	C
+12345678	How Did Dai Get Here At All?	Comedy	A
+12345674	All	MMM	A
+12342341	BBB MMM A
+76543232	CCC KKK B
+98765432	DDD KKK C
+1326251b	Fate	PSY	C

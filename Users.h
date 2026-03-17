@@ -1,70 +1,193 @@
-#ifndef USERS
-#define USERS
-
-#include <iostream> // Input and output streams
-#include <string> // String manipulation
-#include <vector> // Vectors
-#include <map> // Maps
+#include "Users.h"
+#include "User_data.h"
+#include "BMS.h"
+#include "QMS.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <fstream>
+#include <sstream>
 #include <iomanip>
 using namespace std;
 
-class Users
-{
-    private:
-        string name, NRIC, email, password; // Object variables
-    public:
-        Users(); // Default Constructor
-        Users(string user_name, string user_NRIC, string user_email, string user_password); // Constructor
+//librarian and user class, database class
+Books lib;
+BookManagementUser session;
 
-        void set_name(string user_name); //set functions
-        void set_NRIC(string user_name);
-        void set_email(string user_name);
-        void set_password(string user_name);
-        void display_user();
-        //void input_database();
+// Users class
+Users::Users() {} // Default Constructor
+Users::Users(string user_name, string user_NRIC, string user_email, string user_password) { // Constructor
+    name = user_name;
+    NRIC = user_NRIC;
+    email = user_email;
+    password = user_password;
+}
 
-        string get_name() const; //get functions
-        string get_NRIC() const;
-        string get_email() const;
-        string get_password() const;
+void Users::set_name(string user_name) { // Set data member "name" of object
+    name = user_name;
+}
 
-        bool password_verifier(string user_password);
-/*
-TO DO:
+void Users::set_NRIC(string user_NRIC) { // Set data member "NRIC" of object
+    NRIC = user_NRIC;
+}
 
-- User verification (does account exist?)
-- do the password verifier (one caps?, at least 8 char?, at least one number?)
-- dupe nric (should be char[9])
-- 
+void Users::set_email(string user_email) { // Set data member "email" of object
+    email = user_email;
+}
 
+void Users::set_password(string user_password) { // Set data member "password" of object
+    password = user_password;
+}
 
-*/
-};
-#endif
+string Users::get_name() const{
+    return name;
+}
 
-#ifndef USER_DATA
-#define USER_DATA
+string Users::get_NRIC() const{
+    return NRIC;
+}
 
-class User_data 
-{
-    private:
-        map<string, Users> user_database;
-        vector<string> all_NRIC;
+string Users::get_email() const{
+    return email;
+}
 
-    public:
-        User_data(); // Default constructor
-        User_data(map<string, Users> user_database, vector<string> all_NRIC); // Constructor
-        void create_user(); // Create user object and input into database
-        Users retrieve_user(); // Retrieve user object from database
-        void delete_user(string &username); // Delete user object from database
-        void output_database(); // Write map onto text file
-        void input_database(); // Read text file data and convert to map
-        void create_librarian(); // Creates a fake librarian with details
-        string login();
-};
-#endif
+string Users::get_password() const{
+    return password;
+}
+
+void Users::display_user() {
+    cout << "Name: " << get_name() << endl;
+    cout << "NRIC: " << get_NRIC() << endl;
+    cout << "Email: " << get_email() << endl;
+}
 
 // Other functions
-bool password_verifier(string user_password);
-void menu();
-void program();
+void menu() {
+    cout << endl;
+    cout << string(35, '=') << endl;
+    cout << "Enter corresponding letter" << endl;
+    cout << "(Q) to register a Queue" << endl;
+    cout << "(A) to take your choosen books home" << endl;
+    cout << "(D) to Delete account" << endl;
+    cout << "(L) to Logout" << endl;
+    cout << string(35, '=') << endl;
+}
+
+bool password_verifier(string user_password) {
+    bool upper = false, lower = false, digit = false; 
+    if (user_password.length() < 8) {
+        cout << "Your password is invalid" << endl;
+        cout << "Please ensure the password is at least 8 characters long" << endl;
+        return false;
+    }
+    else {
+        for (char c : user_password) {
+            char check = static_cast<unsigned char>(c);
+            if (isupper(check)) {
+                upper = true;
+            }
+            else if (islower(check)) {
+                lower = true;
+            }
+            else if (isdigit(check)) {
+                digit = true;
+            }
+        }
+        if (!(upper && lower && digit)) {
+            cout << "Your password is invalid" << endl;
+            cout << "Please ensure your password contains at least one number, lowercase letter and uppercase letter" << endl;
+            return false;
+        } 
+        else {
+            return true;
+        }
+    }
+}
+
+void program() {
+    map<string, Users> user_database;
+    map<char, Venue> venues;
+    vector<string> all_NRIC;
+    map<int, string> all_timeslots;
+    User_data dataObj(user_database, all_NRIC);
+
+    dataObj.input_database(); //Load from users.txt silently
+    dataObj.create_librarian(); // Implement Libarian data into map
+    if (!load_curr_timeslots(venues, all_timeslots)){ // Load Venues containing timeslots into map
+        exit(0);
+    }
+
+    int choice;
+    string log_in;
+
+    while (true) {
+        cout << "\n========== Book Giveaway Menu ==========" << endl;
+        cout << "1. Login" << endl;
+        cout << "2. Register" << endl;
+        cout << "3. Exit" << endl;
+        cout << "Selection: ";
+
+        if (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+
+        if (choice == 1) // Login
+        {
+            int roleChoice;
+            cout << "\n--- Login Portal ---" << endl;
+            cout << "1. Login as Librarian" << endl;
+            cout << "2. Login as Visitor" << endl;
+            cout << "Selection: ";
+            cin >> roleChoice;
+
+            cin.clear();
+            cin.ignore(1000, '\n');
+            
+            if (roleChoice == 1)
+            {
+                log_in = dataObj.login();
+                if (log_in == "T0123123F") // Libaraian login
+                {
+                    cout << "Welcome Librarian!" << endl;
+                    lib.BMS();
+                }
+                else if (log_in != "")
+                {
+                    cout << "Access Denied: You do not have Librarian priviledges." << endl;
+                }
+            }
+
+            else if (roleChoice == 2) // Visitor login
+            {
+                log_in = dataObj.login(); //NRIC string
+                if (log_in != "")
+                {
+                    cout << "Welcome Visitor! Redirecting to QMS..." << endl;
+                    bool has_book = QMSMenu(log_in, venues, all_timeslots); // returns whether user has books to take
+                    if (has_book){}
+                    session.startSession();
+                }
+            }
+        }
+        
+        else if (choice == 2) //Register user account
+        {
+            dataObj.create_user();
+        }
+        else if (choice == 3)
+        {
+            cout << "Saving data... Goodbye!" << endl;
+            dataObj.output_database();
+            save_curr_timeslots(venues);
+            break;
+        }
+        else
+        {
+            cout << "Invalid choice. Please pick 1-3!" << endl;
+        }
+    }
+}
