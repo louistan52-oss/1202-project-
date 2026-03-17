@@ -16,12 +16,12 @@ BookManagementUser session;
 
 // Users class
 Users::Users() {} // Default Constructor
-Users::Users(string user_name, string user_NRIC, string user_email, string user_password) {
+Users::Users(string user_name, string user_NRIC, string user_email, string user_password) { // Constructor
     name = user_name;
     NRIC = user_NRIC;
     email = user_email;
     password = user_password;
-} // Constructor
+}
 
 void Users::set_name(string user_name) { // Set data member "name" of object
     name = user_name;
@@ -39,19 +39,19 @@ void Users::set_password(string user_password) { // Set data member "password" o
     password = user_password;
 }
 
-string Users::get_name() {
+string Users::get_name() const{
     return name;
 }
 
-string Users::get_NRIC() {
+string Users::get_NRIC() const{
     return NRIC;
 }
 
-string Users::get_email() {
+string Users::get_email() const{
     return email;
 }
 
-string Users::get_password() {
+string Users::get_password() const{
     return password;
 }
 
@@ -66,8 +66,8 @@ void menu() {
     cout << endl;
     cout << string(35, '=') << endl;
     cout << "Enter corresponding letter" << endl;
-    cout << "(A) to register a Queue" << endl;
-    cout << "2" << endl;
+    cout << "(Q) to register a Queue" << endl;
+    cout << "(A) to take your choosen books home" << endl;
     cout << "(D) to Delete account" << endl;
     cout << "(L) to Logout" << endl;
     cout << string(35, '=') << endl;
@@ -110,6 +110,7 @@ void program() {
     User_data dataObj(user_database, all_NRIC);
 
     dataObj.input_database(); //Load from users.txt silently
+    dataObj.create_librarian(); // Implement Libarian data into map
 
     int choice;
     string log_in;
@@ -136,13 +137,16 @@ void program() {
             cout << "2. Login as Visitor" << endl;
             cout << "Selection: ";
             cin >> roleChoice;
+
+            cin.clear();
+            cin.ignore(1000, '\n');
             
             if (roleChoice == 1)
             {
                 log_in = dataObj.login();
-                if (log_in == "T0321927A") // Libaraian login
+                if (log_in == "T0123123F") // Libaraian login
                 {
-                    cout << "Welcom Librarian!" << endl;
+                    cout << "Welcome Librarian!" << endl;
                     lib.BMS();
                 }
                 else if (log_in != "")
@@ -157,7 +161,8 @@ void program() {
                 if (log_in != "")
                 {
                     cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                    QueueUser(); // Redirect to Queue Management
+                    //QueueUser(); // Redirect to Queue Management exclude until code is integrated with User Account.
+                    session.startSession();
                 }
             }
         }
