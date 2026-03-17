@@ -1,6 +1,0 @@
-T0110110H   | Yeoman          | yeoman@hotmail.com         | YYeoman9
-T0112358F   | joven           | jovent@me.com              | J0V3Ntoh
-T0121212C   | Mcdonliads      | imlovingit@me.com          | 1wannaDIE
-T0321927A   | Chris           | chris@gmail.com            | Abcd1234
-T1234567G   | Johnathan Chia  | JC1234@gmail.com           | 1234567aB
-T7654321G   | Oh Chuan Chew   | ohchuanchew1234@gmail.com  | 1234567bC
