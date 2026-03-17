@@ -1,0 +1,66 @@
+venue = A
+
+time = 0900
+
+time = 1000
+
+time = 1100
+
+time = 1200
+
+time = 1300
+
+time = 1400
+
+time = 1500
+
+time = 1600
+
+time = 1700
+
+time = 1800
+
+venue = B
+
+time = 0900
+
+time = 1000
+
+time = 1100
+
+time = 1200
+
+time = 1300
+
+time = 1400
+
+time = 1500
+
+time = 1600
+
+time = 1700
+
+time = 1800
+
+venue = C
+
+time = 0900
+
+time = 1000
+
+time = 1100
+
+time = 1200
+
+time = 1300
+
+time = 1400
+
+time = 1500
+
+time = 1600
+
+time = 1700
+
+time = 1800
+
