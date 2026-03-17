@@ -1,4 +1,3 @@
-
 #include "BMS.h"
 #include <iostream>
 
