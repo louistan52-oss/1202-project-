@@ -1,86 +1,66 @@
-#ifndef ROBOT_TRANSPORT_SYSTEM_H
-#define ROBOT_TRANSPORT_SYSTEM_H
+venue = A
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <fstream>
-#include <iomanip>
-#include <algorithm>
-#include <chrono>
+time = 0900
 
-using namespace std;
+time = 1000
 
-extern atomic<bool> systemRunning;
-enum class State { IDLE, WORKING, CHARGING, REFILLING };
+time = 1100
 
-class Shelves {
-public:
-    int id, currentBooks, maxCapacity;
-    Shelves(int shelfId, int initialBooks, int cap = 4);
-    bool isFull() const { return currentBooks >= maxCapacity; }
-};
+time = 1200
 
-class Location {
-protected:
-    char idChar; 
-    string locationName;
-    int stockAmount;
-    string stockFilePath;
-    mutable mutex stockMtx;
+time = 1300
 
-public:
-    Location(char vid, string name, string sPath);
-    virtual ~Location() {}
-    bool identifyAndExecute(char input);
-    virtual void processRequest() = 0; 
-    void saveStockToFile();
-};
+time = 1400
 
-class Robot {
-private:
-    string name;
-    int battery;
-    int inventory = 0;
-    State status = State::IDLE;
-    mutable mutex rMtx;
+time = 1500
 
-public:
-    Robot(string n);
-    Robot(Robot&& other) noexcept;
-    void startWorking(vector<Shelves>& venueShelves, int& venueStock, mutex& sMtx, Location& loc);
-    void startRefilling(int& venueStock, mutex& sMtx, Location& loc);
-    void startCharging();
-    void display() const;
-    State getStatus() const;
-};
+time = 1600
 
-class Venue : public Location {
-private:
-    vector<Shelves> allShelves;
-    vector<Robot> robots;
-    string shelfDataPath;
+time = 1700
 
-public:
-    Venue(char vid, string name, string stockFile, string shelfFile);
-    void processRequest() override; 
-    void loadShelves();
-    void saveShelves();
-};
+time = 1800
 
-class SystemController {
-private:
-    vector<Location*> fleet;
-    void createDummyEnvironment();
+venue = B
 
-public:
-    SystemController();
-    ~SystemController();
-    void run();
-    void shutdown();
-};
+time = 0900
 
-#endif
+time = 1000
+
+time = 1100
+
+time = 1200
+
+time = 1300
+
+time = 1400
+
+time = 1500
+
+time = 1600
+
+time = 1700
+
+time = 1800
+
+venue = C
+
+time = 0900
+
+time = 1000
+
+time = 1100
+
+time = 1200
+
+time = 1300
+
+time = 1400
+
+time = 1500
+
+time = 1600
+
+time = 1700
+
+time = 1800
+
