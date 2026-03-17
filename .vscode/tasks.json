@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C/C++: cl.exe build active file",
+            "command": "cl.exe",
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/nologo",
+                "/std:c++17",
+                "/Fe${fileDirname}\\main.exe",
+                "${fileDirname}\\main.cpp",
+                "${fileDirname}\\BMS_L.cpp",
+                "${fileDirname}\\BMS_U.cpp",
+                "${fileDirname}\\Users.cpp",
+                "${fileDirname}\\User_data.cpp",
+                "${fileDirname}\\Robot_Transport_System.cpp",
+                "${fileDirname}\\QMS.cpp"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": ["$msCompile"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "compiler: cl.exe"
+        }
+    ]
+}
