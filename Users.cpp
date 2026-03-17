@@ -150,7 +150,7 @@ void program() {
             if (roleChoice == 1)
             {
                 log_in = dataObj.login();
-                if (log_in == "T0123123F") // Libaraian login
+                if (log_in == "T0123123F") // Libaraian login password L1brarian
                 {
                     cout << "Welcome Librarian!" << endl;
                     lib.BMS();
@@ -166,10 +166,12 @@ void program() {
                 log_in = dataObj.login(); //NRIC string
                 if (log_in != "")
                 {
+                    bool has_book;
                     cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                    bool has_book = QMSMenu(log_in, venues, all_timeslots); // returns whether user has books to take
-                    if (has_book){}
-                    session.startSession();
+                    do{
+                        has_book = QMSMenu(log_in, venues, all_timeslots); // returns whether user has books to take 
+                        session.startSession((venues.begin()->first));
+                    }while(has_book);
                 }
             }
         }

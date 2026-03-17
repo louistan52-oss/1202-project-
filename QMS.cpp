@@ -321,7 +321,7 @@ bool QMSMenu(std::string IC, std::map<char, Venue>& venues, const std::map<int, 
                 entered = false;
             }
         }
-        else if (choice == 'Q'){
+        else if (choice == 'Q' || choice == 'q'){
             to_stop = true;
             std::cout << "Program closing..." << std::endl;
         }

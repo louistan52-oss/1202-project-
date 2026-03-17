@@ -50,7 +50,7 @@ private:
 
 public:
     static constexpr int MAX_BOOKS = 2;               // Flowchart logic: "Books taken >= 2?"
-    void startSession();
+    void startSession(char venue);
     void printReceipt();
     std::vector<std::string> const getSerial(){ return scannedBooks; }
 };

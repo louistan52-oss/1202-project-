@@ -15,23 +15,24 @@ void trim(string& s) { // Clean data parsing from text file
 Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter) { // Formatting and dynamically calculates column widths
     Books::BookData data; 
     ifstream BMS(Filename); //Loads book data from a text file
+    stringstream ss;
     string line;
-
+    string serial, title, genre, venue;
     // Default starting widths for columns
     data.size[0] = 10; // Min Title Width
     data.size[1] = 10; // Min Genre Width
 
     if (!BMS) { cout << "Error opening file!\n"; return data; } //if unable to find or open file, returns error
 
-    while (getline(BMS, line)) {
-        if (line.empty()) continue;
-        stringstream ss(line);
-        string serial, title, genre, venue;
-
-        // Reading using TAB delimiter '\t'
-        getline(ss, serial, '\t');
-        getline(ss, title, '\t'); //sets second set of read data to title, ends when reader 
-        getline(ss, genre, '\t'); //repeat for genre and venue
+    for (int i = 0;!BMS.eof();i++) {
+        ss.clear();
+        getline(BMS,line);
+        ss.str(line);
+        if (line.empty()) continue;                  
+        // Reading using TAB delimiter ','
+        getline(ss, serial, ',');
+        getline(ss, title, ','); //sets second set of read data to title, ends when reader 
+        getline(ss, genre, ','); //repeat for genre and venue
         getline(ss, venue);
 
         trim(serial); trim(title); trim(genre); trim(venue); // Clean data for comparison and display
@@ -104,8 +105,8 @@ void Books::printHeader(Books::BookData data, bool showVenue) { // Generates sta
 
 // Display View: Books by specific Venue
 int Books::BMS_L(const char& v, int cat, bool sort) {
-    BookData data = loadBooks("LibraryBooks.txt", &v);
-    
+    BookData data = loadBooks("LibraryBooks.txt");
+    string venue;
     auto cmp = [&](const Books& a, const Books& b) -> bool { // Lambda for custom sorting based on user selection
         string fieldA, fieldB;
         if (cat == 2) { fieldA = a.genre; fieldB = b.genre; }
@@ -120,12 +121,14 @@ int Books::BMS_L(const char& v, int cat, bool sort) {
 
     int genreW = data.size[1] + 3;
     int titleW = data.size[0] + 3;
-
     for (size_t i = 0; i < data.book.size(); i++) { //displays books at the venue
-        cout << left << setw(5) << i + 1 << " | "
+        if ((venue=v)==data.book[i].getVenue()) continue;
+        else{
+            cout << left << setw(5) << i + 1 << " | "
              << setw(genreW) << data.book[i].genre << " | "
              << setw(15) << data.book[i].serial << " | "
              << setw(titleW) << data.book[i].title << endl;
+        }
     }
 
     // Calculate width without the venue column (+7 for separators, +3 for base)
