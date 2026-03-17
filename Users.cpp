@@ -1,6 +1,7 @@
 #include "Users.h"
+#include "user_data.h"
 #include "BMS.h"
-#include "QMS_UPDATED.h"
+#include "QMS.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -157,11 +158,12 @@ void program() {
 
             else if (roleChoice == 2) // Visitor login
             {
-                log_in = dataObj.login();
+                log_in = dataObj.login(); //NRIC string
                 if (log_in != "")
                 {
                     cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                    //QueueUser(); // Redirect to Queue Management exclude until code is integrated with User Account.
+                    bool has_book = QMSMenu(log_in, venues, all_timeslots); // returns whether user has books to take
+                    if (has_book);
                     session.startSession();
                 }
             }
