@@ -2,40 +2,41 @@
 #define ROBOT_TRANSPORT_SYSTEM_H
 
 #include <iostream>
-#include <string>
 #include <vector>
-#include <thread>
+#include <string>
 #include <mutex>
 #include <atomic>
-#include <fstream>
-#include <iomanip>
-#include <algorithm>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
-extern atomic<bool> systemRunning;
+// State Machine: Allows the system to track exactly what a robot is doing.
 enum class State { IDLE, WORKING, CHARGING, REFILLING };
+
+// Global shutdown flag: 'atomic' ensures all threads see the "stop" signal simultaneously.
+extern atomic<bool> systemRunning;
 
 class Shelves {
 public:
     int id, currentBooks, maxCapacity;
     Shelves(int shelfId, int initialBooks, int cap = 4);
-    bool isFull() const { return currentBooks >= maxCapacity; }
+    bool isFull() const;
 };
 
+// Base Class: Uses Polymorphism so the Controller can manage any Venue generically.
 class Location {
 protected:
-    char idChar; 
-    string locationName;
+    char idChar;
+    string locationName, stockFilePath;
     int stockAmount;
-    string stockFilePath;
-    mutable mutex stockMtx;
-
+    mutex stockMtx; // Protects shared stock from simultaneous robot access.
 public:
     Location(char vid, string name, string sPath);
-    virtual ~Location() {}
+    virtual ~Location();
+    virtual void processRequest() = 0; // The Live Monitor UI.
+    virtual string getQuickStatus() = 0; // The Dashboard HUD summary.
     bool identifyAndExecute(char input);
-    virtual void processRequest() = 0; 
     void saveStockToFile();
 };
 
@@ -45,41 +46,46 @@ private:
     int battery;
     int inventory = 0;
     State status = State::IDLE;
-    mutable mutex rMtx;
-
+    mutable mutex rMtx; // Protections for robot-specific data.
 public:
     Robot(string n);
     Robot(Robot&& other) noexcept;
-    void startWorking(vector<Shelves>& venueShelves, int& venueStock, mutex& sMtx, Location& loc);
-    void startRefilling(int& venueStock, mutex& sMtx, Location& loc);
-    void startCharging();
-    void display() const;
     State getStatus() const;
+    int getBattery() const;
+    string getName() const { return name; }
+    void display() const;
+    
+    // Core Logic
+    void startWorking(vector<Shelves>& venueShelves, int& vStock, mutex& sMtx, Location& loc);
+    // 'needed' parameter ensures the robot only takes what is missing from shelves.
+    void startRefilling(int& vStock, mutex& sMtx, Location& loc, int needed);
+    void startCharging();
 };
 
 class Venue : public Location {
 private:
+    string shelfDataPath;
     vector<Shelves> allShelves;
     vector<Robot> robots;
-    string shelfDataPath;
-
 public:
     Venue(char vid, string name, string stockFile, string shelfFile);
-    void processRequest() override; 
     void loadShelves();
     void saveShelves();
+    void processRequest() override;
+    string getQuickStatus() override;
 };
 
 class SystemController {
 private:
     vector<Location*> fleet;
-    void createDummyEnvironment();
-
 public:
     SystemController();
     ~SystemController();
+    void createDummyEnvironment();
     void run();
-    void shutdown();
 };
+
+// Utility: Allows the program to listen for 'Q' without pausing the simulation.
+bool keyPressed(char target);
 
 #endif
