@@ -12,7 +12,7 @@ void trim(string& s) { // Clean data parsing from text file
     s = s.substr(first, (last - first + 1));
 }
 
-Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter) { // Formatting and dynamically calculates column widths
+Books::BookData Books::loadBooks(const char* Filename) { // Formatting and dynamically calculates column widths
     Books::BookData data; 
     ifstream BMS(Filename); //Loads book data from a text file
     stringstream ss;
@@ -37,8 +37,6 @@ Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter) 
 
         trim(serial); trim(title); trim(genre); trim(venue); // Clean data for comparison and display
 
-        if (venueFilter && venue[0] != *venueFilter) continue; // Filter by venue if specific venue view is requested (Option 2)
-
         data.book.push_back(Books(title, genre, serial, venue)); // Store book object in vector
 
         // Update max lengths for dynamic alignment
@@ -49,37 +47,6 @@ Books::BookData Books::loadBooks(const char* Filename, const char* venueFilter) 
     return data;
 }
 
-int Books::BMS_L(int cat, bool sort) { // Display View: All books
-    // Supports sorting by category (Serial, Genre, Title) and book ordering (Ascending / Descending)
-    BookData data = loadBooks("LibraryBooks.txt");  
-
-    auto cmp = [&](const Books& a, const Books& b) -> bool { // Lambda for custom sorting based on user selection
-        string fieldA, fieldB;
-        if (cat == 2) { fieldA = a.genre; fieldB = b.genre; }
-        else if (cat == 3) { fieldA = a.title; fieldB = b.title; }
-        else { fieldA = a.serial; fieldB = b.serial; }
-        return sort ? (fieldA < fieldB) : (fieldA > fieldB);
-    };
-    std::sort(data.book.begin(), data.book.end(), cmp);
-
-    Books::printHeader(data, true); // Render table header
-
-    int genreW = data.size[1] + 3;
-    int titleW = data.size[0] + 3;
-
-    for (size_t i = 0; i < data.book.size(); i++) { // Each iteration prints a table row
-        cout << left << setw(5) << i + 1 << " | "
-             << setw(genreW) << data.book[i].genre << " | "
-             << setw(15) << data.book[i].serial << " | "
-             << setw(titleW) << data.book[i].title << " | "
-             << data.book[i].venue << endl;
-    }
-
-    int totalWidth = 5 + genreW + 15 + titleW + 8 + 10; // Dynamic border closure based on column widths
-    cout << string(totalWidth, '=') << endl;
-    cout << data.book.size() << " Books remaining" << endl;
-    return 0;
-}
 
 void Books::printHeader(Books::BookData data, bool showVenue) { // Generates standardized table header for book views
     int noW = 5;
@@ -103,10 +70,9 @@ void Books::printHeader(Books::BookData data, bool showVenue) { // Generates sta
     cout << endl << string(totalWidth, '-') << endl;
 }
 
-// Display View: Books by specific Venue
-int Books::BMS_L(const char& v, int cat, bool sort) {
-    BookData data = loadBooks("LibraryBooks.txt");
-    string venue;
+int Books::BMS_L(int cat, bool sort, bool show) { // Display View: All books
+    // Supports sorting by category (Serial, Genre, Title) and book ordering (Ascending / Descending)
+    BookData data = loadBooks("LibraryBooks.txt");  
     auto cmp = [&](const Books& a, const Books& b) -> bool { // Lambda for custom sorting based on user selection
         string fieldA, fieldB;
         if (cat == 2) { fieldA = a.genre; fieldB = b.genre; }
@@ -116,33 +82,67 @@ int Books::BMS_L(const char& v, int cat, bool sort) {
     };
     std::sort(data.book.begin(), data.book.end(), cmp);
 
-    cout << "\nDisplaying Books for Venue: " << v << endl;
-    Books::printHeader(data, false); // Don't show venue col since we filtered for it
+    if (show){
+        Books::printHeader(data, true); // Render table header
 
-    int genreW = data.size[1] + 3;
-    int titleW = data.size[0] + 3;
-    for (size_t i = 0; i < data.book.size(); i++) { //displays books at the venue
-        if ((venue=v)==data.book[i].getVenue()) continue;
-        else{
+        int genreW = data.size[1] + 3;
+        int titleW = data.size[0] + 3;
+    
+        for (size_t i = 0; i < data.book.size(); i++) { // Each iteration prints a table row
             cout << left << setw(5) << i + 1 << " | "
-             << setw(genreW) << data.book[i].genre << " | "
-             << setw(15) << data.book[i].serial << " | "
-             << setw(titleW) << data.book[i].title << endl;
+                << setw(genreW) << data.book[i].genre << " | "
+                << setw(15) << data.book[i].serial << " | "
+                << setw(titleW) << data.book[i].title << " | "
+                << data.book[i].venue << endl;
         }
-    }
 
-    // Calculate width without the venue column (+7 for separators, +3 for base)
-    int totalWidth = 5 + genreW + 15 + titleW + 7; 
-    cout << string(totalWidth, '=') << endl;
-    cout << data.book.size() << " Books in Venue " << v << " remaining" << endl;
+        int totalWidth = 5 + genreW + 15 + titleW + 8 + 10; // Dynamic border closure based on column widths
+        cout << string(totalWidth, '=') << endl;
+        cout << data.book.size() << " Books remaining" << endl;
+    }
     return 0;
 }
 
-int Books::BMS_L(int RTS, const char& v){
-    //call RTS status
-    cout << "simulating rts: robot no." << RTS << "of venue:" << v << endl;
+// Display View: Books by specific Venue
+int Books::BMS_L(const char& v, int cat, bool sort, bool show) {
+    BookData data = loadBooks("LibraryBooks.txt");
+    string venue;
+    int venue_count=0;
+    auto cmp = [&](const Books& a, const Books& b) -> bool { // Lambda for custom sorting based on user selection
+        string fieldA, fieldB;
+        if (cat == 2) { fieldA = a.genre; fieldB = b.genre; }
+        else if (cat == 3) { fieldA = a.title; fieldB = b.title; }
+        else { fieldA = a.serial; fieldB = b.serial; }
+        return sort ? (fieldA < fieldB) : (fieldA > fieldB);
+    };
+    std::sort(data.book.begin(), data.book.end(), cmp);
+
+    if (show){
+        cout << "\nDisplaying Books for Venue: " << v << endl;
+        Books::printHeader(data, false); // Don't show venue col since we filtered for it
+
+        int genreW = data.size[1] + 3;
+        int titleW = data.size[0] + 3;
+    
+        for (size_t i = 0; i < data.book.size(); i++) { //displays books at the venue
+            
+            if ((venue=v)==data.book[i].getVenue()) {
+                cout << left << setw(5) << i + 1 << " | " <<
+                setw(genreW) << data.book[i].genre << " | "
+                << setw(15) << data.book[i].serial << " | "
+                << setw(titleW) << data.book[i].title << endl;
+                venue_count++;
+            }
+            else continue;
+        }
+
+        // Calculate width without the venue column (+7 for separators, +3 for base)
+        int totalWidth = 5 + genreW + 15 + titleW + 7; 
+        cout << string(totalWidth, '=') << endl;
+        cout << venue_count << " Books in Venue " << v << " remaining" << endl;
+    }
     return 0;
-};
+}
 
 void Books::viewAllAccounts() // Display user account database table
 {
@@ -286,7 +286,6 @@ int Books::BMS(){
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
             case '3':
-                cout << "RTS simulated\n";
                 SC.run();
                 break;
             case '4': 
