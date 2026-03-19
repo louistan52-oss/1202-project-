@@ -22,10 +22,10 @@ void User_data::create_user() {
         if (user_database.count(NRIC)) {
             cout << "NRIC already in use. Please try again" << endl;
         }
-    } while (user_database.count(NRIC));
+    } while (user_database.count(NRIC)); // Ensure unique NRIC keys in the database
 
     cout << "Enter name: ";
-    getline(cin, name); // Read spaces for name input
+    getline(cin, name); // Uses getline to allow spaces in names
 
     cout << "Enter email: ";
     getline(cin, email);
@@ -33,7 +33,7 @@ void User_data::create_user() {
     do {
         cout << "Enter a password: ";
         cin >> password;
-    } while (!password_verifier(password));
+    } while (!password_verifier(password)); // Validates password strength/requirements
 
     //username = NRIC;
     Users tempObj{name, NRIC, email, password};
@@ -49,39 +49,49 @@ Users User_data::retrieve_user() {
     return tempObj;
 }
 
-void User_data::delete_user(string &username) {
+bool User_data::delete_user(string &username) { //Handles account deletion with user confirmation.
     char confirmation;
     cout << "Are you sure you want to delete your account?" << endl;
     cout << "Enter (Y) for yes or (N) for no: ";
-    cin >> confirmation;
-    if (confirmation == 'Y' || confirmation == 'y') {
+    while (true)
+    {
+        cin >> confirmation;
+        confirmation = toupper(confirmation);
+        if (confirmation != 'Y' || confirmation != 'N') break;
+        {
+            cout << "Invalid input" << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
+    }
+
+    if (confirmation == 'Y') { // username Passed by reference; cleared if deletion is successful
         cout << "You have successfully deleted your account" << endl;
         user_database.erase(username);
         username = "";
+        return true;
     }
-    else if (confirmation == 'N' || confirmation == 'n') {
+    else if (confirmation == 'N') { // True if deleted, False if cancelled
         cout << "You have decided to cancel" << endl;
-    }
-    else {
-        cout << "Invalid input" << endl;
+        return false;
     }
 }
 
-void User_data::output_database() {
+void User_data::output_database() { // Saves current user database to users.txt using a tabular format
     ofstream outFile("users.txt", ios::out | ios::trunc); // USE ios::trunc to overwrite. This prevents duplication
     
     // Default minimum widths for iomanip alignment
     size_t maxName = 14;
     size_t maxEmail = 24;
 
-    for (auto const& [key, values] : user_database) // First pass (O(n)) calculates dynamic column widths based on actual data length
+    for (auto const& [key, values] : user_database) // Dynamic width calculation based on current data lengths
     {   // Ensures the UI scales correctly across different screen size / data sets
         if (key == "T0123123F") continue; 
         if (values.get_name().length() > maxName) maxName = values.get_name().length();
         if (values.get_email().length() > maxEmail) maxEmail = values.get_email().length();
     }
 
-    for (auto const& [key, values] : user_database) { // Use 'setw' and 'left' function to align a tabular layout
+    for (auto const& [key, values] : user_database) { // Write formatted data to file
         if (key == "T0123123F") continue; //Skips librarian account data to be save in user database
 
         outFile << left << setw(12) << values.get_NRIC() << "| "
@@ -92,7 +102,7 @@ void User_data::output_database() {
     outFile.close();
 }
 
-void User_data::input_database() 
+void User_data::input_database()  // Loads user data from users.txt and populates the map.
 {
     string line;
     ifstream inFile("users.txt"); // Hardcode the filename here for a cleaner UX
@@ -148,7 +158,7 @@ string User_data::login() {
         cin >> password;
         if (password == check) {
             cout << "Logged in!" << endl;
-            return username;
+            return username; // Returns NRIC to be used as a session key
         }
         else {
             cout << "Wrong password" << endl;
