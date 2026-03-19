@@ -121,7 +121,7 @@ int removeFile(){
 
 void program() {
     map<string, Users> user_database;
-    map<char, Venue> venues;
+    map<char, QMS_Venue> venues;
     vector<string> all_NRIC;
     map<int, string> all_timeslots;
     User_data dataObj(user_database, all_NRIC);
