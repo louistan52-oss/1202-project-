@@ -1,6 +1,7 @@
 #include "Users.h"
+#include "User_data.h"
 #include "BMS.h"
-#include "QMS_UPDATED.h"
+#include "QMS.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -39,19 +40,19 @@ void Users::set_password(string user_password) { // Set data member "password" o
     password = user_password;
 }
 
-string Users::get_name() {
+string Users::get_name() const{
     return name;
 }
 
-string Users::get_NRIC() {
+string Users::get_NRIC() const{
     return NRIC;
 }
 
-string Users::get_email() {
+string Users::get_email() const{
     return email;
 }
 
-string Users::get_password() {
+string Users::get_password() const{
     return password;
 }
 
@@ -106,10 +107,16 @@ bool password_verifier(string user_password) {
 
 void program() {
     map<string, Users> user_database;
+    map<char, Venue> venues;
     vector<string> all_NRIC;
+    map<int, string> all_timeslots;
     User_data dataObj(user_database, all_NRIC);
 
     dataObj.input_database(); //Load from users.txt silently
+    dataObj.create_librarian(); // Implement Libarian data into map
+    if (!load_curr_timeslots(venues, all_timeslots)){ // Load Venues containing timeslots into map
+        exit(0);
+    }
 
     int choice;
     string log_in;
@@ -136,11 +143,14 @@ void program() {
             cout << "2. Login as Visitor" << endl;
             cout << "Selection: ";
             cin >> roleChoice;
+
+            cin.clear();
+            cin.ignore(1000, '\n');
             
             if (roleChoice == 1)
             {
                 log_in = dataObj.login();
-                if (log_in == "T0321927A") // Libaraian login
+                if (log_in == "T0123123F") // Libaraian login password L1brarian
                 {
                     cout << "Welcome Librarian!" << endl;
                     lib.BMS();
@@ -153,12 +163,15 @@ void program() {
 
             else if (roleChoice == 2) // Visitor login
             {
-                log_in = dataObj.login();
+                log_in = dataObj.login(); //NRIC string
                 if (log_in != "")
                 {
+                    bool has_book;
                     cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                    //QueueUser(); // Redirect to Queue Management exclude until code is integrated with User Account.
-                    session.startSession();
+                    do{
+                        has_book = QMSMenu(log_in, venues, all_timeslots); // returns whether user has books to take 
+                        session.startSession((venues.begin()->first));
+                    }while(has_book);
                 }
             }
         }
@@ -171,6 +184,7 @@ void program() {
         {
             cout << "Saving data... Goodbye!" << endl;
             dataObj.output_database();
+            save_curr_timeslots(venues);
             break;
         }
         else
@@ -179,4 +193,3 @@ void program() {
         }
     }
 }
-

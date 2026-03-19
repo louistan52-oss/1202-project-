@@ -9,14 +9,15 @@
                 "/Zi",
                 "/EHsc",
                 "/nologo",
+                "/std:c++17",
                 "/Fe${fileDirname}\\main.exe",
-                //"/Fe${fileDirname}\\Robot_Transport_System.exe",
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\BMS_L.cpp",
                 "${fileDirname}\\BMS_U.cpp",
                 "${fileDirname}\\Users.cpp",
                 "${fileDirname}\\User_data.cpp",
-                "${fileDirname}\\Robot_Transport_System.cpp"
+                "${fileDirname}\\Robot_Transport_System.cpp",
+                "${fileDirname}\\QMS.cpp"
             ],
             "options": {
                 "cwd": "${fileDirname}"

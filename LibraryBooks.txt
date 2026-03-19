@@ -1,15 +1,25 @@
-11111111	L'Stranger	Mystery	A
-22222222	Why not?	Comedy	B
-33333333	Dream of the Red Chamber	Horror	C
-12345678	Crime and Punishment	Tragedy	A
-23454567	Goethe's Faust	Educational	B
-12309484	Metamorphosis	Comedy	C
-98765432	Moby-Dick; Or The Whale	Comedy	C
-00066600	The Divine Comedy	Romance	B
-91280736	Wuthering Heights	Tragedy	C
-12345678	How Did Dai Get Here At All?	Comedy	A
-12345674	All	MMM	A
-12342341	BBB MMM A
-76543232	CCC KKK B
-98765432	DDD KKK C
-1326251b	Fate	PSY	C
+11111111,L'Stranger,ZZZ,A
+22222222,Why not?,YYY,B
+33333333,Dream of the Red Chamber,ZZZ,C
+12345678,Crime and Punishment,XXX,A
+23454567,Goethe's Faust,WWW,B
+12309484,Metamorphosis,YYY,C
+98765432,Moby-Dick; Or The Whale,YYY,C
+00066600,The Divine Comedy,WWW,B
+91280736,Wuthering Heights,XXX,C
+12345678,How Did Dai Get Here At All?,YYY,A
+12345674,All,WWW,A
+12342341,BBB,VVV,A
+76543232,CCC,VVV,B
+98765432,DDD,VVV,B
+1326251b,Fate,WWW,C
+12344456,To be or not to be,ZZZ,A
+11112345,That is the question,ZZZ,A
+89170538,So call me. Maybe?,ZZZ,A
+99125299,Ninety-nine Tonight,ZZZ,A
+14544290,I see you.,ZZZ,A
+88888888,Orlando Furioso,ZZZ,B
+01100110,Serial Test Case,XXX,B
+12312312,This is one book with same serial number,YYY,B
+12312312,This is the other book with the same serial,VVV,C
+0,Not All Books Must Have 8 Serials.,WWW,C

@@ -18,24 +18,26 @@ void User_data::create_user() {
     do {
         cout << "Enter NRIC: ";
         cin >> NRIC;
+        cin.ignore(1000, '\n'); // Clear buffer after NRIC input
         if (user_database.count(NRIC)) {
             cout << "NRIC already in use. Please try again" << endl;
         }
-    }
-    while (user_database.count(NRIC));
+    } while (user_database.count(NRIC));
+
     cout << "Enter name: ";
-    cin >> name;
+    getline(cin, name); // Read spaces for name input
+
     cout << "Enter email: ";
-    cin >> email;
+    getline(cin, email);
+
     do {
         cout << "Enter a password: ";
         cin >> password;
-    }
-    while (!password_verifier(password));
-    username = NRIC;
+    } while (!password_verifier(password));
+
+    //username = NRIC;
     Users tempObj{name, NRIC, email, password};
-    user_database.insert({username, tempObj});
-    all_NRIC.push_back(NRIC);
+    user_database[NRIC] = tempObj;
 }
 
 Users User_data::retrieve_user() {
@@ -66,52 +68,78 @@ void User_data::delete_user(string &username) {
 }
 
 void User_data::output_database() {
-    ofstream outFile;
-    outFile.open("users.txt");
-    for (auto key:user_database) {
-        auto values = key.second;
-        outFile << key.first << " " << values.get_name() << "," << values.get_NRIC() << "," 
-        << values.get_email() << "," << values.get_password();
-        outFile << endl;
+    ofstream outFile("users.txt", ios::out | ios::trunc); // USE ios::trunc to overwrite. This prevents duplication
+    
+    // Default minimum widths for iomanip alignment
+    size_t maxName = 14;
+    size_t maxEmail = 24;
+
+    for (auto const& [key, values] : user_database) // First pass (O(n)) calculates dynamic column widths based on actual data length
+    {   // Ensures the UI scales correctly across different screen size / data sets
+        if (key == "T0123123F") continue; 
+        if (values.get_name().length() > maxName) maxName = values.get_name().length();
+        if (values.get_email().length() > maxEmail) maxEmail = values.get_email().length();
+    }
+
+    for (auto const& [key, values] : user_database) { // Use 'setw' and 'left' function to align a tabular layout
+        if (key == "T0123123F") continue; //Skips librarian account data to be save in user database
+
+        outFile << left << setw(12) << values.get_NRIC() << "| "
+                << setw(maxName + 2) << values.get_name() << "| "
+                << setw(maxEmail + 2) << values.get_email() << "| "
+                << values.get_password() << endl;
     }
     outFile.close();
 }
 
-void User_data::input_database() {
-    string key, value, user_creds;
-    ifstream inFile; 
-    inFile.open("users.txt");
-    if (!inFile.is_open()) {
-        cout << "Error in opening file! Please try another file" << endl;
-    }
-    else {
-        while (inFile >> key >> value) {
-            vector<string> data;
-            istringstream data_stream(value);
-            while (getline(data_stream, user_creds, ',')) {
-                data.push_back(user_creds);
-            }
-            Users userObj{data[0], data[1], data[2], data[3]};
-            user_database.insert({data[1], userObj});
+void User_data::input_database() 
+{
+    string line;
+    ifstream inFile("users.txt"); // Hardcode the filename here for a cleaner UX
+    if (!inFile) return; // If file doesn't exist, just return;
+
+    user_database.clear(); // Clear memory before loading to prevent RAM-based duplicates
+
+    while (getline(inFile, line)) 
+    {
+        if (line.empty()) continue;
+
+        // Uses stringstream and getline with a character anchor ('|') 
+        stringstream ss(line);
+        string nric, name, email, password;
+
+        getline(ss, nric, '|'); //Read data using " | " as the anchor
+        getline(ss, name, '|');
+        getline(ss, email, '|');
+        getline(ss, password); 
+        
+        //Removes leading / trailing spaces added by the iomanip formatting in output_database
+        auto trim = [](string& s) 
+        {
+            size_t first = s.find_first_not_of(" ");
+            if (string::npos == first) return;
+            size_t last = s.find_last_not_of(" ");
+            s = s.substr(first, (last - first + 1));
+        };
+
+        trim(nric);
+        trim(name);
+        trim(email);
+        trim(password);
+
+        if (!nric.empty())
+        {
+            Users temp(name, nric, email, password);
+            user_database[nric] = temp; // Load into the map silently
         }
     }
-}
-
-void User_data::dummy_data(){
-    Users dummy1{"Chris", "T0321927A", "chris@gmail.com", "Abcd1234"};
-    Users dummy2{"Yeoman", "T0317369G", "Yeoman@outlook.com", "YYeoman9"};
-    Users dummy3{"Anthony", "T1234567B", "anton@icloud.com", "@T0nytkha"};
-    Users dummy4{"Louis", "T0987654Z", "louis@yahoo.com", "1122AAbb"};
-    user_database.insert({"T0321927A", dummy1});
-    user_database.insert({"T0317369G", dummy2});
-    user_database.insert({"T1234567B", dummy3});
-    user_database.insert({"T0987654Z", dummy4});
+    inFile.close();
 }
 
 string User_data::login() {
     string username, password;
     cout << endl;
-    cout << "Enter username: ";
+    cout << "Enter username (NRIC): ";
     cin >> username;
     if (user_database.count(username)) {
         Users tempObj = user_database.at(username);
@@ -133,7 +161,7 @@ string User_data::login() {
     }
 }
 
-void User_data::create_librarian() {
-    Users dummy_librarian{"T0123123F", "Librarian", "libby@gmail.com", "L1brarian"};
+void User_data::create_librarian() { // Ensure this ID matches to Librarian login
+    Users dummy_librarian{"L1brarian", "Librarian", "libby@gmail.com", "L1brarian"};
     user_database.insert({"T0123123F", dummy_librarian});
 }

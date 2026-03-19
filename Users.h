@@ -23,10 +23,10 @@ class Users
         void display_user();
         //void input_database();
 
-        string get_name(); //get functions
-        string get_NRIC();
-        string get_email();
-        string get_password();
+        string get_name() const; //get functions
+        string get_NRIC() const;
+        string get_email() const;
+        string get_password() const;
 
         bool password_verifier(string user_password);
 /*
@@ -60,7 +60,6 @@ class User_data
         void output_database(); // Write map onto text file
         void input_database(); // Read text file data and convert to map
         void create_librarian(); // Creates a fake librarian with details
-        void dummy_data();
         string login();
 };
 #endif
