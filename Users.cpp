@@ -24,37 +24,16 @@ Users::Users(string user_name, string user_NRIC, string user_email, string user_
     password = user_password;
 }
 
-void Users::set_name(string user_name) { // Set data member "name" of object
-    name = user_name;
-}
+// Getters and Setters
+void Users::set_name(string user_name) { name = user_name;} // Set data member "name" of object
+void Users::set_NRIC(string user_NRIC) { NRIC = user_NRIC;} // Set data member "NRIC" of object
+void Users::set_email(string user_email) { email = user_email;} // Set data member "email" of object
+void Users::set_password(string user_password) { password = user_password;} // Set data member "password" of object
 
-void Users::set_NRIC(string user_NRIC) { // Set data member "NRIC" of object
-    NRIC = user_NRIC;
-}
-
-void Users::set_email(string user_email) { // Set data member "email" of object
-    email = user_email;
-}
-
-void Users::set_password(string user_password) { // Set data member "password" of object
-    password = user_password;
-}
-
-string Users::get_name() const{
-    return name;
-}
-
-string Users::get_NRIC() const{
-    return NRIC;
-}
-
-string Users::get_email() const{
-    return email;
-}
-
-string Users::get_password() const{
-    return password;
-}
+string Users::get_name() const{ return name;}
+string Users::get_NRIC() const{ return NRIC;}
+string Users::get_email() const{ return email;}
+string Users::get_password() const{ return password;}
 
 void Users::display_user() {
     cout << "Name: " << get_name() << endl;
@@ -62,19 +41,7 @@ void Users::display_user() {
     cout << "Email: " << get_email() << endl;
 }
 
-// Other functions
-void menu() {
-    cout << endl;
-    cout << string(35, '=') << endl;
-    cout << "Enter corresponding letter" << endl;
-    cout << "(Q) to register a Queue" << endl;
-    cout << "(A) to take your choosen books home" << endl;
-    cout << "(D) to Delete account" << endl;
-    cout << "(L) to Logout" << endl;
-    cout << string(35, '=') << endl;
-}
-
-bool password_verifier(string user_password) {
+bool password_verifier(string user_password) { // Validates password based on length and character variety (upper, lower, digit).
     bool upper = false, lower = false, digit = false; 
     if (user_password.length() < 8) {
         cout << "Your password is invalid" << endl;
@@ -105,13 +72,30 @@ bool password_verifier(string user_password) {
     }
 }
 
+int removeFile(){ // Cleanup function to remove temporary session files
+    bool status=1;
+    while(status){
+    status = remove("vA_shelves.txt");
+    status = remove("vB_shelves.txt");
+    status = remove("vC_shelves.txt");
+    status = remove("vA_stock.txt");
+    status = remove("vB_stock.txt");
+    status = remove("vC_stock.txt");
+    }
+    if (status!=0) perror("error deleting file");
+    return 0;
+}
+
+// --- Main Program Logic ---
 void program() {
+    // Data structures for program lifetime
     map<string, Users> user_database;
-    map<char, Venue> venues;
+    map<char, QMS_Venue> venues;
     vector<string> all_NRIC;
     map<int, string> all_timeslots;
     User_data dataObj(user_database, all_NRIC);
 
+    // Initial Data Loading
     dataObj.input_database(); //Load from users.txt silently
     dataObj.create_librarian(); // Implement Libarian data into map
     if (!load_curr_timeslots(venues, all_timeslots)){ // Load Venues containing timeslots into map
@@ -119,9 +103,9 @@ void program() {
     }
 
     int choice;
-    string log_in;
-
-    while (true) {
+    string log_in; // Stores the current session's NRIC
+    bool Operation = true;
+    while (Operation) {
         cout << "\n========== Book Giveaway Menu ==========" << endl;
         cout << "1. Login" << endl;
         cout << "2. Register" << endl;
@@ -147,10 +131,10 @@ void program() {
             cin.clear();
             cin.ignore(1000, '\n');
             
-            if (roleChoice == 1)
+            if (roleChoice == 1) // Librarian Logic
             {
                 log_in = dataObj.login();
-                if (log_in == "T0123123F") // Libaraian login password L1brarian
+                if (log_in == "T0123123F") // Libaraian login User ID
                 {
                     cout << "Welcome Librarian!" << endl;
                     lib.BMS();
@@ -166,12 +150,53 @@ void program() {
                 log_in = dataObj.login(); //NRIC string
                 if (log_in != "")
                 {
-                    bool has_book;
-                    cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                    do{
-                        has_book = QMSMenu(log_in, venues, all_timeslots); // returns whether user has books to take 
-                        session.startSession((venues.begin()->first));
-                    }while(has_book);
+                    int option;
+                    cout << "\n--- Menu ---" << endl;
+                    cout << "1. Enter booking reservation" << endl;
+                    cout << "2. Delete account" << endl;
+                    cout << "Selection: ";
+                    while (true)
+                    {
+                        cin >> option;
+                        if (option == 1 || option == 2) break;
+                        cout << "Invalid Input. Please try again: ";
+                        cin.clear();
+                        cin.ignore(1000, '\n');
+                    }
+                    if (option == 1) // Redirect to Queue Management
+                    {
+                        bool has_book = true;
+                        int QMS_choice;
+                        cout << "Welcome Visitor! Redirecting to QMS..." << endl;
+                        while (has_book)
+                        {
+                            QMS_choice = QMSMenu(log_in, venues, all_timeslots);
+                            switch (QMS_choice)
+                            {
+                            case 2: session.startSession((venues.begin()->first)); break;
+                            case 3: has_book = false; Operation = false;
+                            case 4: has_book = false; Operation = false;
+                                break;                        
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    else if (option == 2) // Account Deletion Logic
+                    {
+                        string current_user_nric = log_in; // Save the NRIC to a temp variable before it gets wiped
+                        if(dataObj.delete_user(log_in))
+                        {   // Only scrub queues and save files if user confirmed deletion ('Y')
+                            leave_venue(current_user_nric, venues);
+                            save_curr_timeslots(venues);
+                            dataObj.output_database();
+                            cout << "Account and bookings cleared." << endl;
+                        }
+                        else
+                        {
+                            cout << "Returning to menu..." << endl; // This runs if they typed 'N'
+                        }
+                    }
                 }
             }
         }
@@ -180,10 +205,12 @@ void program() {
         {
             dataObj.create_user();
         }
-        else if (choice == 3)
+
+        else if (choice == 3) // Program Termination & Final Save
         {
             cout << "Saving data... Goodbye!" << endl;
             dataObj.output_database();
+            removeFile();
             save_curr_timeslots(venues);
             break;
         }
