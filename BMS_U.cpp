@@ -33,43 +33,33 @@ void BookManagementUser::startSession(char venue) { // Handles book scanning, li
     string currentSerial;
     
     cout << "--- System Started ---" << endl;
-    
-    while (scanAnother=='Y') { // Main session loop: continues as long as user wants to scan and hasn't hit limits
-        Books::BookData data = b.loadBooks("LibraryBooks.txt"); // Reload book data every loop to ensure real-time stock accuracy
-        switch (venue){ // Display books available specifically for this venue
-            case 'A':
-                b.BMS_L('A',4,true);
-                break;
-            case 'B':
-                b.BMS_L('B',4,true);
-                break;
-            case 'C':
-                b.BMS_L('C',4,true);
-                break;
-        } 
-        if (scannedBooks.size() >= MAX_BOOKS) { // Hard-cap limit check
-            showErrorMessage("Maximum book limit (2) reached!");
-            printReceipt();
-            return;
-        }
+    cout << "\nDo you want to claim up to 2 books? (Y/N): ";
+    while (true) // Input validation loop for initial decision
+    {
+        cin >> decision;
+        decision = toupper(decision);
+        if (decision == 'Y' || decision == 'N') break;
 
-        cout << "\nDo you want to claim up to 2 books? (Y/N): ";
-        while (true) // Input validation loop for initial decision
-        {
-            cin >> decision;
-            decision = toupper(decision);
-            if (scanAnother == 'Y' || scanAnother == 'N') break;
+        cout << "Invalid Input. Please try again (Y/N): ";
+        cin.clear();
+        cin.ignore(1000, '\n');
+    }
+    if (decision == 'N') scanAnother = 'N';
+    else if (decision == 'Y')
+    {
+        while (scanAnother=='Y') { // Main session loop: continues as long as user wants to scan and hasn't hit limits
+            Books::BookData data = b.loadBooks("LibraryBooks.txt"); // Reload book data every loop to ensure real-time stock accuracy
+            switch (venue){ // Display books available specifically for this venue
+                case 'A':
+                    b.BMS_L('A',4,true); break;
+                case 'B':
+                    b.BMS_L('B',4,true); break;
+                case 'C':
+                    b.BMS_L('C',4,true); break;
+            } 
 
-            cout << "Invalid Input. Please try again (Y/N): ";
-            cin.clear();
-            cin.ignore(1000, '\n');
-        }
-
-        if (decision == 'Y')
-        {
             cout << "\nPlease scan book serial: ";
             cin >> currentSerial;
-
             auto it = find(scannedBooks.begin(), scannedBooks.end(), currentSerial);
             if (it != scannedBooks.end()) { // Check for duplicate scans in the current session
                 showErrorMessage("Duplicate scan detected!");
@@ -88,26 +78,28 @@ void BookManagementUser::startSession(char venue) { // Handles book scanning, li
                         break;
                     }
                 }
-            }    
-            do
-            {
-                cout << "Scan another book? (y/n): "; // Secondary validation loop for "Scan Another" prompt
-                cin >> scanAnother;
-                scanAnother=toupper(scanAnother);
-                if (scanAnother=='Y') break;
-                else if (scanAnother=='N') break;
-                else{   
-                    cout << "Invalid Input. Please try again: ";
-                    cin.clear();
-                    cin.ignore();  
-                }
-            }while(scanAnother!='Y' || scanAnother!='N');
-            printReceipt();
+            } 
+            if (scannedBooks.size() < MAX_BOOKS) 
+            {   
+                do
+                {
+                    cout << "Scan another book? (Y/N): "; // Secondary validation loop for "Scan Another" prompt
+                    cin >> scanAnother;
+                    scanAnother=toupper(scanAnother);
+                    if (scanAnother== 'Y' || scanAnother== 'N') break;
+                    else{   
+                        cout << "Invalid Input. Please try again: ";
+                        cin.clear();
+                        cin.ignore(1000, '\n');  
+                    }
+                }while(true);  
+            }
+            else if (scannedBooks.size() >= MAX_BOOKS) { // Hard-cap limit check
+                cout << "Maximum book limit (2) reached!" << endl;
+                scanAnother = 'N'; // Automatically end loop if limit is reached
+            }
         }
-        else if (decision == 'N')
-        {
-            scanAnother = 'N'; // User chose not to claim any/more books
-        }
+        printReceipt();
     }
     cout << "--- Session Ended ---" << endl;
 }
