@@ -105,6 +105,20 @@ bool password_verifier(string user_password) {
     }
 }
 
+int removeFile(){
+    bool status=1;
+    while(status){
+    status = remove("vA_shelves.txt");
+    status = remove("vB_shelves.txt");
+    status = remove("vC_shelves.txt");
+    status = remove("vA_stock.txt");
+    status = remove("vB_stock.txt");
+    status = remove("vC_stock.txt");
+    }
+    if (status!=0) perror("error deleting file");
+    return 0;
+}
+
 void program() {
     map<string, Users> user_database;
     map<char, Venue> venues;
@@ -184,6 +198,7 @@ void program() {
         {
             cout << "Saving data... Goodbye!" << endl;
             dataObj.output_database();
+            removeFile();
             save_curr_timeslots(venues);
             break;
         }

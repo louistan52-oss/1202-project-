@@ -298,7 +298,7 @@ void SystemController::run() {
 }
 
 void SystemController::createDummyEnvironment() {
-    auto init = [](string p, string v) { { ofstream f(p); f << v; } };
+    auto init = [](string p, string v) { ifstream c(p); if(!c) { ofstream f(p); f << v; } };
     map<int,vector<int>> count = venue_data();
     init("vA_stock.txt", to_string(count[0][5])); init("vA_shelves.txt", to_string(count[0][0]) + " " 
           + to_string(count[0][1]) + " " + to_string(count[0][2]) + " " +to_string(count[0][3]) + " " +
