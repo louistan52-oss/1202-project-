@@ -23,3 +23,19 @@
 12312312,This is the other book with the same serial,VVV,C
 0,Not All Books Must Have 8 Serials,WWW,A
 11111111,L'Stranger,ZZZ,A
+1,ABC,ZZZ,A
+2,ABC,WWW,A
+3,XYZ,YYY,B
+4,OBJ,XXX,A
+5,OCC,ZZZ,A
+6,OCT,ZZZ,A
+7,WHY,YYY,A
+8,Tell Me,XXX,A
+9,LOL,XXX,A
+10,PLS,XXX,A
+11,Away,ZZZ,A
+12,Oh no,ZZZ,A
+13,Oh Yes,ZZZ,A
+14,Oh oh oh,ZZZ,C
+15,OH...,XXX,C
+16,Hey! Listen,YYY,C

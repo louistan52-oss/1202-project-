@@ -60,8 +60,8 @@ void Robot::startWorking(vector<Shelves>& venueShelves, int& vStock, mutex& sMtx
             this_thread::sleep_for(1s);
             unique_lock<mutex> lock(rMtx);
 
-            // 1. BATTERY HANDOVER: If < 20%, offload and go charge.
-            if (battery <= 20) { // If low, return stock to warehouse and switch to charging thread
+            // 1. BATTERY HANDOVER: If < 40%, offload and go charge.
+            if (battery <= 40) { // If low, return stock to warehouse and switch to charging thread
                 if (inventory > 0) { lock_guard<mutex> sLock(sMtx); vStock += inventory; inventory = 0; }
                 status = State::CHARGING;
                 thread(&Robot::startCharging, this).detach();
@@ -134,56 +134,14 @@ void Robot::startCharging() { // Charing Logic. Incremental battery recovery unt
 }
 
 // --- Book Data ---
-map<int,vector<int>> venue_data(){
+vector<int> venue_data(){
     string genre[5];
     Books::BookData data = b.loadBooks();
-    map<int,vector<int>> venue_books; //1st value is cat, value2 is book count per genre type
-    venue_books[0] = vector<int>(6,0);
-    venue_books[1] = vector<int>(6,0);
-    venue_books[2] = vector<int>(6,0);
+    vector<int> venue_books(3,0); //1st value is cat, value2 is book count per genre type
             for (int i=0; i<data.book.size(); i++){
-                if (data.book[i].getVenue() == "A"){
-                    venue_books[0][5]++;
-                    for (int f=0; f<5;f++){
-                        if (genre[f].empty()) {
-                            genre[f] = data.book[i].getGenre();
-                            venue_books[0][f]++;
-                            break;
-                        }
-                        else if (genre[f]==data.book[i].getGenre()) {
-                            venue_books[0][f]++;
-                            break;
-                        }
-                    }
-                }
-                else if (data.book[i].getVenue() == "B"){
-                    venue_books[1][5]++;
-                    for (int f=0; f<5;f++){
-                        if (genre[f].empty()) {
-                            genre[f] = data.book[i].getGenre();
-                            venue_books[1][f]++;
-                            break;
-                        }
-                        else if (genre[f]==data.book[i].getGenre()) {
-                            venue_books[1][f]++;
-                            break;
-                        }
-                    }
-                }
-                else if (data.book[i].getVenue() == "C"){
-                    venue_books[2][5]++;
-                    for (int f=0; f<5;f++){
-                        if (genre[f].empty()) {
-                            genre[f] = data.book[i].getGenre();
-                            venue_books[2][f]++;
-                            break;
-                        }
-                        else if (genre[f]==data.book[i].getGenre()){
-                            venue_books[2][f]++;
-                            break;
-                        }
-                    }
-                }
+                if (data.book[i].getVenue() == "A") venue_books[0]++;
+                else if (data.book[i].getVenue() == "B") venue_books[1]++;
+                else if (data.book[i].getVenue() == "C") venue_books[2]++;
             }
     return venue_books;
 }
@@ -212,37 +170,18 @@ string Venue::getQuickStatus() {
     return "Stock: [" + stockCol + to_string(stockAmount) + "\033[0m] | Progress: " + to_string(total) + "/" + to_string(total);
 }
 
-void Venue::syncShelvesFromFile() {
-    map<int,vector<int>> live = venue_data();
-    int venueIndex = (locationName == "Venue_A") ? 0 
-                   : (locationName == "Venue_B") ? 1 : 2;
-
-    int total = live[venueIndex][5]; // total books for this venue
-    
-    // Redistribute total across shelves, capped at maxCapacity
-    lock_guard<mutex> lock(stockMtx);
-    int remaining = total;
-    for (auto& s : allShelves) {
-        s.currentBooks = min(remaining, s.maxCapacity);
-        remaining -= s.currentBooks;
-        if (remaining < 0) remaining = 0;
-    }
-    stockAmount = remaining; // leftover = warehouse stock
-}
-
 void Venue::processRequest() { // MONITORING & CONTROL
     while (systemRunning) {
         cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
 
-        map<int,vector<int>> live = venue_data();
+        vector<int> live = venue_data();
         int venueIndex = (locationName == "Venue_A") ? 0 
                        : (locationName == "Venue_B") ? 1 : 2;
         {
             lock_guard<mutex> lock(stockMtx);
-            stockAmount = live[venueIndex][5]; // total books for this venue
+            stockAmount = live[venueIndex]; // total books for this venue
         }
 
-        syncShelvesFromFile();
         int total = 0; for (auto& s : allShelves) total += s.currentBooks;
 
         cout << "LIVE MONITOR: " << locationName << " | CENTRAL STOCK: " << stockAmount << "\n" << endl;
@@ -301,16 +240,15 @@ void SystemController::run() {
 
 void SystemController::createDummyEnvironment() {
     auto init = [](string p, string v) { ifstream c(p); if(!c) { ofstream f(p); f << v; } };
-    map<int,vector<int>> count = venue_data();
-    init("vA_stock.txt", to_string(count[0][5])); init("vA_shelves.txt", to_string(count[0][0]) + " " 
-          + to_string(count[0][1]) + " " + to_string(count[0][2]) + " " +to_string(count[0][3]) + " " +
-          to_string(count[0][4]));
-    init("vB_stock.txt", to_string(count[1][5])); init("vB_shelves.txt", to_string(count[1][0]) + " " 
-          + to_string(count[1][1]) + " " + to_string(count[1][2]) + " " +to_string(count[1][3]) + " " +
-          to_string(count[1][4]));
-    init("vC_stock.txt", to_string(count[2][5])); init("vC_shelves.txt", to_string(count[2][0]) + " " 
-          + to_string(count[2][1]) + " " + to_string(count[2][2]) + " " +to_string(count[2][3]) + " " +
-          to_string(count[2][4]));
+    vector<int> count = venue_data();
+    init("vA_stock.txt", to_string(count[0]));
+    init("vA_shelves.txt", "0 0 0 0 0");  // ← was spreading books across shelves
+
+    init("vB_stock.txt", to_string(count[1]));
+    init("vB_shelves.txt", "0 0 0 0 0");
+
+    init("vC_stock.txt", to_string(count[2]));
+    init("vC_shelves.txt", "0 0 0 0 0");
 }
 
 bool keyPressed(char target) {

@@ -8,7 +8,6 @@ SystemController sc;
 
 int main(){
     srand(static_cast<unsigned int>(time(0)));
-    
     USERS::program();
     return 0;
 }
