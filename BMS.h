@@ -42,7 +42,7 @@ private:
     Books::BookData data;
 
     // Action: "Reduce book count in database"
-    void updateDatabase(std::string serial, Books::BookData data);
+    bool updateDatabase(std::string serial, Books::BookData data, const char venue);
 
     // Action: "Error message"
     void showErrorMessage(std::string message);

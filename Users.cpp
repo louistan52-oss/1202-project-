@@ -1,4 +1,5 @@
 #include "Users.h"
+#include "User_data.h"
 #include "BMS.h"
 #include "QMS.h"
 #include "Venue.h"
@@ -176,18 +177,51 @@ void program() {
                     log_in = dataObj.login(); //NRIC string
                     if (log_in != "")
                     {
-                        bool has_book = true;
-                        int QMS_choice;
-                        cout << "Welcome Visitor! Redirecting to QMS..." << endl;
-                        while (has_book)
+                    int option;
+                    cout << "\n--- Menu ---" << endl;
+                    cout << "1. Enter booking reservation" << endl;
+                    cout << "2. Delete account" << endl;
+                    cout << "Selection: ";
+                        while (true)
                         {
-                            QMS_choice = VenueOps::menu(log_in, venues, all_timeslots);
-                            switch (QMS_choice)
+                            cin >> option;
+                            if (option == 1 || option == 2) break;
+                            cout << "Invalid Input. Please try again: ";
+                            cin.clear();
+                            cin.ignore(1000, '\n');
+                        }
+                        if (option == 1) // Redirect to Queue Management
+                        {
+                            bool has_book = true;
+                            int QMS_choice;
+                            cout << "Welcome Visitor! Redirecting to QMS..." << endl;
+                            while (has_book)
                             {
-                            case 2: session.startSession((venues.begin()->first)); break;
-                            case 3: has_book = false; break;
-                            case 4: has_book = false; break;                        
-                            default: break;
+                                QMS_choice = QMSMenu(log_in, venues, all_timeslots);
+                                switch (QMS_choice)
+                                {
+                                case 2: session.startSession((venues.begin()->first)); break;
+                                case 3: has_book = false; Operation = true; break;
+                                case 4: has_book = false; Operation = true;
+                                    break;                        
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                        else if (option == 2) // Account Deletion Logic
+                        {
+                            string current_user_nric = log_in; // Save the NRIC to a temp variable before it gets wiped
+                            if(dataObj.delete_user(log_in))
+                            {   // Only scrub queues and save files if user confirmed deletion ('Y')
+                                leave_venue(current_user_nric, venues);
+                                save_curr_timeslots(venues);
+                                dataObj.output_database();
+                                cout << "Account and bookings cleared." << endl;
+                            }
+                            else
+                            {
+                                cout << "Returning to menu..." << endl; // This runs if they typed 'N'
                             }
                         }
                     }
