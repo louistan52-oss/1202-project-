@@ -166,7 +166,7 @@ void program() {
                     if (log_in == "T0123123F") // Libaraian login User ID
                     {
                         cout << "Welcome Librarian!" << endl;
-                        lib.BMS();
+                        lib.BMS(dataObj);
                     }
                     else if (log_in != "")
                     {

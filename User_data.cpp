@@ -40,13 +40,31 @@ void User_data::create_user() {
     user_database[NRIC] = tempObj;
 }
 
-Users User_data::retrieve_user() {
+void User_data::retrieve_user() { 
     string username;
-    cout << "Enter username: ";
-    cin >> username;
-    Users tempObj = user_database.at(username);
-    tempObj.display_user();
-    return tempObj;
+    int maxName = 13, maxEmail = 23;
+    for (auto const& [key, values] : user_database) {
+        if (values.get_name().length() > maxName) maxName = values.get_name().length();
+        if (values.get_email().length() > maxEmail) maxEmail = values.get_email().length();
+    }
+    int nricW = 11;
+    int nameW = maxName + 2;
+    int emailW = maxEmail + 2;
+    cout << endl;
+    cout << string(nricW + nameW + emailW + 25, '=') << endl; // Calulated lendths to draw a seperator lines creates a clean table for reading
+    cout << "LIBARIAN VIEW: USER DATABASE          " << endl;
+    cout << string(nricW + nameW + emailW + 25, '=') << endl;
+    cout << left << setw(11) << "NRIC" << " | " 
+         << setw(maxName + 2) << "Name" << " | " 
+         << setw(maxEmail + 2) << "Email" << " | "
+         << "Password" << endl;
+    cout << string(nricW + nameW + emailW + 25, '-') << endl;
+    for (auto const& [key, values] : user_database) {
+        cout << left << setw(nricW) << values.get_NRIC() << " | "
+                 << setw(nameW) << values.get_name() << " | "
+                 << setw(emailW) << values.get_email() << " | "
+                 << values.get_password() << endl;
+    }
 }
 
 bool User_data::delete_user(string &username) { //Handles account deletion with user confirmation.

@@ -142,6 +142,10 @@ int Books::BMS_L(const char& v, int cat, bool sort, bool show) {
     return 0;
 }
 
+void Books::viewAllAccounts(User_data& dataObj) {
+    dataObj.retrieve_user();
+}
+
 void Books::viewAllAccounts() // Display user account database table
 {
     ifstream inFile("users.txt");
@@ -255,7 +259,7 @@ char venueSelect(){
     return choice;
 }
 
-int Books::BMS(){
+int Books::BMS(User_data& dataObj){
     char choice;
     int cat;
     bool sort;
@@ -287,7 +291,7 @@ int Books::BMS(){
                 sc.run();
                 break;
             case '4': 
-                Books::viewAllAccounts();
+                Books::viewAllAccounts(dataObj);
                 break;
             case '5': //Exit
                 cout << "Exiting BMS." << endl;

@@ -12,7 +12,7 @@ class User_data
         User_data(); // Default constructor
         User_data(map<string, Users> user_database, vector<string> all_NRIC); // Constructor
         void create_user(); // Create user object and input into database
-        Users retrieve_user(); // Retrieve user object from database
+        void retrieve_user(); // Retrieve user object from database
         bool delete_user(string &username); // Delete user object from database
         void output_database(); // Write map onto text file
         void input_database(); // Read text file data and convert to map

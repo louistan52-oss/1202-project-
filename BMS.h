@@ -10,6 +10,7 @@
 #include <ctype.h> //char-related functions
 #include <algorithm> //alogirthm to sort data
 #include <vector> //dyanamic memory
+#include "User_data.h"
 
 class Books{
     private:
@@ -17,10 +18,11 @@ class Books{
     public:
         Books(): title(""), genre(""), serial(""), venue(""){}; //default constructor
         Books(std::string t, std::string g, std::string s, std::string v) : title(t), genre(g), serial(s), venue(v){};
+        void viewAllAccounts(User_data& dataObj);
         void viewAllAccounts();
         int BMS_L(int cat=0, bool sort=0, bool show=true);
         int BMS_L(const char& v=0,int cat=0, bool sort=0, bool show=true);
-        int BMS();
+        int BMS(User_data& dataObj);
         std::string getTitle() const { return title; }
         std::string getSerial() const { return serial; }
         std::string getGenre() const { return genre; }
