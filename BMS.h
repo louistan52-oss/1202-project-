@@ -18,9 +18,8 @@ class Books{
         Books(): title(""), genre(""), serial(""), venue(""){}; //default constructor
         Books(std::string t, std::string g, std::string s, std::string v) : title(t), genre(g), serial(s), venue(v){};
         void viewAllAccounts();
-        int BMS_L(int cat=0, bool sort=0);
-        int BMS_L(const char& v = 0, int cat=0, bool sort=0);
-        int BMS_L(int RTS=0, const char& v=0);
+        int BMS_L(int cat=0, bool sort=0, bool show=true);
+        int BMS_L(const char& v=0,int cat=0, bool sort=0, bool show=true);
         int BMS();
         std::string getTitle() const { return title; }
         std::string getSerial() const { return serial; }
@@ -30,7 +29,7 @@ class Books{
             std::vector<Books> book; //declared vector for book class -- allows program to dynamically allocate memory to the class during runtime
             int size[3] = {0,0,0}; //3 sizes to be used for iomanip -- text output manipulation
         };
-        Books::BookData loadBooks(const char* Filename="LibraryBooks.txt", const char* venueFilter=nullptr);
+        Books::BookData loadBooks(const char* Filename="LibraryBooks.txt");
         void printHeader(BookData data, bool v=false);
 };
 #endif

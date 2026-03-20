@@ -75,6 +75,7 @@ bool User_data::delete_user(string &username) { //Handles account deletion with 
         cout << "You have decided to cancel" << endl;
         return false;
     }
+    return true;
 }
 
 void User_data::output_database() { // Saves current user database to users.txt using a tabular format

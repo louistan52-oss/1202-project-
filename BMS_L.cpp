@@ -2,8 +2,6 @@
 #include "Robot_Transport_System.h"
 using namespace std;
 
-SystemController SC;
-
 // Helper function to remove leading / trailing whitespcace, tabs, and newlines
 void trim(string& s) { // Clean data parsing from text file
     size_t first = s.find_first_not_of(" \t\r\n");
@@ -286,7 +284,7 @@ int Books::BMS(){
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
             case '3':
-                SC.run();
+                sc.run();
                 break;
             case '4': 
                 Books::viewAllAccounts();

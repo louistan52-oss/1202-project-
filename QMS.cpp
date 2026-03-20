@@ -9,12 +9,11 @@
 using namespace std;
 
 // --- Queue Member Functions ---
-// Constructors initialize queue space (limit 10), timeslot, and venue ID
 Queue::Queue() : space{10}, time{""}, venue{' '}, queue{} {} 
 Queue::Queue(const string& time) : space{10}, time{time}, venue{' '}, queue{} {} 
 Queue::Queue(const char& v, const string& time) : space{10}, time{time}, venue{v}, queue{} {}
 
-int Queue::addToQueue(string IC){ // Adds a user (IC) to the set; prevents duplicates and checks capacity
+int Queue::addToQueue(string IC){ 
     if (queue.count(IC)){
         cout << "You are already registered!" << endl;
         return 0;
@@ -22,7 +21,7 @@ int Queue::addToQueue(string IC){ // Adds a user (IC) to the set; prevents dupli
     if (!isFull()) {
         space--;
         queue.insert(IC);
-        return 10 - space; // Returns the current position in queue
+        return 10 - space;
     }
     cout << "There is no more space!" << endl;
     return 0;
@@ -31,15 +30,15 @@ int Queue::addToQueue(string IC){ // Adds a user (IC) to the set; prevents dupli
 void Queue::removeFromQueue(string IC){ queue.erase(IC); }
 bool Queue::isFull() const { return space == 0; } 
 const set<string>& Queue::getQueue() const { return queue; }
-ostream& operator<<(ostream& os, const Queue& queue) { // Overload << to print the time associated with a queue
+ostream& operator<<(ostream& os, const Queue& queue) { 
     os << queue.time; 
     return os;
 }
 
-bool checkQueueStatus(string IC, const Queue& obj){ // Global helper: Check if a specific IC exists in a Queue object
+bool checkQueueStatus(string IC, const Queue& obj){ // checks IC against queue, returns if in queue or not
     return (obj.queue.find(IC) != obj.queue.end());
 }
-void printQueueDetails(string IC, const Queue& obj) { // Prints user-specific booking info if they are in the queue
+void printQueueDetails(string IC, const Queue& obj) {
     cout <<"Queue Details:" << endl;
     for (const auto& e: obj.queue){
         if (e == IC)
@@ -54,8 +53,7 @@ void printQueueDetails(string IC, const Queue& obj) { // Prints user-specific bo
 //********************************************************* */
 //
 //          Venue Temporary Class Implementation
-//          --- QMS_Venue Implementation ---
-// Manages a collection of timeslots (Queues) for a specific venue
+//
 //********************************************************* */
 
 QMS_Venue::QMS_Venue() {} 
@@ -67,8 +65,8 @@ QMS_Venue::QMS_Venue(map<string, Queue>& times) {
 QMS_Venue::~QMS_Venue() {} 
 map<string, Queue>& QMS_Venue::getTimeSlots() { return timeslots; }
 const map<string, Queue>& QMS_Venue::getTimeSlots() const { return timeslots; }
-void QMS_Venue::push_time(char v, string time) { timeslots.insert({time, Queue{v, time}}); } // Creates a new timeslot queue within this venue
-Queue& QMS_Venue::operator[](const string& index) { return timeslots[index]; } // Subscript operator overloads for easy access to specific timeslots
+void QMS_Venue::push_time(char v, string time) { timeslots.insert({time, Queue{v, time}}); }
+Queue& QMS_Venue::operator[](const string& index) { return timeslots[index]; }
 const Queue& QMS_Venue::operator[](const string& index) const { return timeslots.at(index); }
 
 //********************************************************* */
@@ -77,13 +75,13 @@ const Queue& QMS_Venue::operator[](const string& index) const { return timeslots
 //
 //********************************************************* */
 
-bool isValidVenue(char val) { // Validates venue selection (A-C)
+bool isValidVenue(char val) {
     val = toupper(val);
-    if (val >= 'A' && val <= 'C'){ return true;} 
+    if (val >= 'A' && val <= 'C'){ return true;}
     return false;
 }
 
-bool isValidTime(string val, const map<int, string>& timeslots) { // Validates if the selected time exists in the system
+bool isValidTime(string val, const map<int, string>& timeslots) {
     if (timeslots.count(stoi(val))) { return true; }
     if (val.length() != 4) return false;
     if (val.find_first_not_of("0123456789") != string::npos) return false;
@@ -105,7 +103,7 @@ bool isValidIC(string nric)
 //
 //********************************************************* */
 
-char venueSelection() { // Prompt user for a venue with input validation
+char venueSelection() {
     char choice;
     cout << "Select a venue (A, B, or C): " << endl;
     if (cin.peek() == '\n') cin.ignore();
@@ -117,7 +115,7 @@ char venueSelection() { // Prompt user for a venue with input validation
     return toupper(choice);
 }
 
-string timeSelection(const QMS_Venue& venue, const map<int, string>& timeslots) { // Prompt user for a timeslot, showing only those that aren't full
+string timeSelection(const QMS_Venue& venue, const map<int, string>& timeslots) {
     cout << "Select a timeslots (Limited to 10 reservation per time slot): " << endl;
     int numTimeSlots{1}; // for display purposes
     vector<string> open_timeslots; // vector to store indexes of available timeslots
@@ -151,8 +149,7 @@ string timeSelection(const QMS_Venue& venue, const map<int, string>& timeslots) 
     }
 }
 
-// --- Persistence (File I/O) ---
-bool save_curr_timeslots(const map<char, QMS_Venue>& venues) { // Saves all venue/timeslot/user data to timeslots.txt
+bool save_curr_timeslots(const map<char, QMS_Venue>& venues) {
     ofstream file{"timeslots.txt"};
     if (!file)
     {
@@ -173,7 +170,6 @@ bool save_curr_timeslots(const map<char, QMS_Venue>& venues) { // Saves all venu
     return true;
 }
 
-// Loads existing data from file into the program's maps
 bool load_curr_timeslots(map<char, QMS_Venue>& venues, map<int, string>& timeslots) {
     ifstream file{"timeslots.txt"};
     if (!file) {
@@ -224,7 +220,7 @@ bool load_curr_timeslots(map<char, QMS_Venue>& venues, map<int, string>& timeslo
     return true;
 }
 
-bool check_booking(string IC, map<char, QMS_Venue>& venues) { // Checks if a user already has a booking anywhere in the system
+bool check_booking(string IC, map<char, QMS_Venue>& venues) {
     for (auto& [v, venue] : venues){
         for (auto& [time, queue] : venue.getTimeSlots()){
             if (queue.getQueue().count(IC)){
@@ -243,7 +239,7 @@ bool check_booking(string IC, map<char, QMS_Venue>& venues) { // Checks if a use
     return false;
 }
 
-bool enter_venue(string IC, map<char, QMS_Venue>& venues, char gantry_venue, string gantry_time) { // Validates user entry against a specific gantry location and time
+bool enter_venue(string IC, map<char, QMS_Venue>& venues, char gantry_venue, string gantry_time) {
     for (auto& [v, venue] : venues){
         if (v != gantry_venue) continue; // Skip venues that don't match the gantry
         for (auto& [time, queue] : venue.getTimeSlots()){
@@ -256,7 +252,7 @@ bool enter_venue(string IC, map<char, QMS_Venue>& venues, char gantry_venue, str
     return false;
 }
 
-bool leave_venue(string IC, map<char, QMS_Venue>& venues) { // Wipes the user's booking when they leave the venue
+bool leave_venue(string IC, map<char, QMS_Venue>& venues) {
     for (auto& [v, venue] : venues){
         for (auto& [time, queue] : venue.getTimeSlots()){
             if (queue.getQueue().count(IC)){
@@ -268,10 +264,9 @@ bool leave_venue(string IC, map<char, QMS_Venue>& venues) { // Wipes the user's 
     return false;
 }
 
-// --- Main Menu System ---
 int QMSMenu(string IC, map<char, QMS_Venue>& venues, const map<int, string>& timeslots) {
     bool to_stop = false;
-    static bool entered = false; // static ensures the 'entered' state survives when this function returns/restarts
+    static bool entered = false; // Changing this to static makes the function "remember" the value between different calls.
     int choice;
     while (!to_stop){
 
@@ -310,7 +305,7 @@ int QMSMenu(string IC, map<char, QMS_Venue>& venues, const map<int, string>& tim
             {
                 cout << "You may proceed into the venue" << endl << endl;
                 entered = true;
-                to_stop = true; // Exit QMS to trigger BMS session
+                to_stop = true;
             }
             else
             {   // This only triggers if they are NOT inside AND have NO booking
@@ -334,8 +329,6 @@ int QMSMenu(string IC, map<char, QMS_Venue>& venues, const map<int, string>& tim
         }
         else{
             cout << "Choose again: ";
-            cin.clear();
-            cin.ignore(1000, '\n');
         }
     }
     return choice;

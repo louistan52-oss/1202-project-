@@ -90,3 +90,4 @@ public:
 bool keyPressed(char target);
 
 #endif
+extern SystemController sc;
