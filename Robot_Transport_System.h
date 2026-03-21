@@ -52,6 +52,7 @@ public:
     Robot(Robot&& other) noexcept;
     State getStatus() const;
     int getBattery() const;
+    int getInventory() const { return inventory;};
     string getName() const { return name; }
     void display() const;
     
@@ -60,6 +61,8 @@ public:
     // 'needed' parameter ensures the robot only takes what is missing from shelves.
     void startRefilling(int& vStock, mutex& sMtx, Location& loc, int needed);
     void startCharging();
+
+    int removeFiles(); //remove files at program end
 };
 
 class Venue : public Location {
@@ -67,12 +70,12 @@ private:
     string shelfDataPath;
     vector<Shelves> allShelves;
     vector<Robot> robots;
+    int totalVenueBooks;
 public:
     Venue(char vid, string name, string stockFile, string shelfFile);
     void loadShelves();
     void saveShelves();
     void processRequest() override;
-    void syncShelvesFromFile();
     string getQuickStatus() override;
 };
 

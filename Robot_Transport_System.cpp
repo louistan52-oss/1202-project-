@@ -72,6 +72,7 @@ void Robot::startWorking(vector<Shelves>& venueShelves, int& vStock, mutex& sMtx
             int current = 0, maxTotal = 0;
             for (auto& s : venueShelves) { current += s.currentBooks; maxTotal += s.maxCapacity; }
             int deficit = maxTotal - current;
+            
 
             // 3. REFILL CHECK: Only take what the shelves actually need.
             if (inventory <= 0) {
@@ -128,7 +129,7 @@ void Robot::startCharging() { // Charing Logic. Incremental battery recovery unt
     while (systemRunning) {
         this_thread::sleep_for(1s);
         lock_guard<mutex> lock(rMtx);
-        battery += 15;
+        battery += 2;
         if (battery >= 100) { battery = 100; status = State::IDLE; return; }
     }
 }
@@ -137,7 +138,7 @@ void Robot::startCharging() { // Charing Logic. Incremental battery recovery unt
 vector<int> venue_data(){
     string genre[5];
     Books::BookData data = b.loadBooks();
-    vector<int> venue_books(3,0); //1st value is cat, value2 is book count per genre type
+    vector<int> venue_books(3,0); //grabs no. of books per venue
             for (int i=0; i<data.book.size(); i++){
                 if (data.book[i].getVenue() == "A") venue_books[0]++;
                 else if (data.book[i].getVenue() == "B") venue_books[1]++;
@@ -148,7 +149,11 @@ vector<int> venue_data(){
 
 // --- VENUE & MONITOR ---
 Venue::Venue(char vid, string name, string stockFile, string shelfFile) : Location(vid, name, stockFile), shelfDataPath(shelfFile) {
-    loadShelves(); robots.emplace_back("Alpha"); robots.emplace_back("Bravo");
+    loadShelves(); 
+    vector<int> count=venue_data();
+    int index = vid - 'A';
+    totalVenueBooks = (index >= 0 && index < count.size()) ? count[index] : 0;
+    robots.emplace_back("Alpha"); robots.emplace_back("Bravo");
 }
 
 void Venue::loadShelves() {
@@ -165,24 +170,24 @@ void Venue::saveShelves() {
 }
 
 string Venue::getQuickStatus() {
-    int total = 0; for (auto& s : allShelves) total += s.currentBooks;
-    string stockCol = (stockAmount < 10) ? "\033[1;31m" : "\033[1;32m";
-    return "Stock: [" + stockCol + to_string(stockAmount) + "\033[0m] | Progress: " + to_string(total) + "/" + to_string(total);
+    int totalShelves = 0; for (auto& s : allShelves) totalShelves += s.currentBooks;
+    string stockCol = (totalVenueBooks < 10) ? "\033[1;31m" : "\033[1;32m"; //if less than 10 in storage, show warning
+    return "Stock: [" + stockCol + to_string(totalVenueBooks) + "\033[0m] | Progress: " + to_string(min(totalShelves,stockAmount)) + "/" + to_string(stockAmount);
+    //color code, total books at venue, progress: min of how many at shelves vs how many in storage / stock remain in storage
 }
 
 void Venue::processRequest() { // MONITORING & CONTROL
     while (systemRunning) {
         cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
 
-        vector<int> live = venue_data();
-        int venueIndex = (locationName == "Venue_A") ? 0 
-                       : (locationName == "Venue_B") ? 1 : 2;
-        {
-            lock_guard<mutex> lock(stockMtx);
-            stockAmount = live[venueIndex]; // total books for this venue
-        }
-
+        saveShelves(); loadShelves();
         int total = 0; for (auto& s : allShelves) total += s.currentBooks;
+        int inventory; bool hasInventory=false, anyActive=false;
+
+        for (const auto& r : robots) {
+            if (r.getInventory()>0) hasInventory = true;
+            if (r.getStatus()==State::REFILLING || r.getStatus()==State::WORKING) anyActive=true;
+        };
 
         cout << "LIVE MONITOR: " << locationName << " | CENTRAL STOCK: " << stockAmount << "\n" << endl;
         for (auto& s : allShelves) {
@@ -195,7 +200,7 @@ void Venue::processRequest() { // MONITORING & CONTROL
         bool moving = false;
         for (const auto& r : robots) if (r.getStatus() == State::WORKING || r.getStatus() == State::REFILLING) moving = true;
         
-        if (!moving && total < 20 && stockAmount > 0) {
+        if (!moving && (total < 20 && stockAmount > 0) || hasInventory && !anyActive) {
             for (auto& r : robots) if (r.getStatus() == State::IDLE) { r.startWorking(allShelves, stockAmount, stockMtx, *this); break; }
         }
 
@@ -231,6 +236,7 @@ void SystemController::run() {
         char label = 'A';
         for (auto loc : fleet) { cout << " [" << label << "] Venue " << label << " -> " << loc->getQuickStatus() << endl; label++; }
         cout << "\n [Q] SHUTDOWN\n\n Selection > ";
+   
         if (!(cin >> in)) break; char c = toupper(in[0]); if (c == 'Q') break;
         bool found = false; for (auto loc : fleet) if (loc->identifyAndExecute(c)) found = true;
         if (!found) { cout << "Invalid Selection."; this_thread::sleep_for(1s); }
