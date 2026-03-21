@@ -85,6 +85,17 @@ bool load(std::map<char, QMS_Venue>& venues,
     return load_curr_timeslots(venues, timeslots);
 }
 
+// ── Remove Shelve related files ───────────────────────────────────────────────
+int removeFiles(){
+    bool status=1;
+    const string filenames[6] = {"vA_shelves.txt","vB_shelves.txt","vC_shelves.txt","vA_stock.txt","vB_stock.txt","vC_stock.txt"};
+    for (int i=0; i<6 ;i++){
+        if (remove(filenames[i].c_str()) != 0) return 1;
+        else continue;
+    }
+    return 0;
+}
+
 // ── Menu entry point ──────────────────────────────────────────────────────────
 
 int menu(const std::string& IC,

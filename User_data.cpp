@@ -165,6 +165,51 @@ void User_data::input_database()  // Loads user data from users.txt and populate
     inFile.close();
 }
 
+
+void User_data::input_librarian()  // Loads user data from users.txt and populates the map.
+{
+    string line;
+    ifstream inFile("librarian.txt"); // Hardcode the filename here for a cleaner UX
+    if (!inFile) return; // If file doesn't exist, just return;
+
+    user_database.clear(); // Clear memory before loading to prevent RAM-based duplicates
+
+    while (getline(inFile, line)) 
+    {
+        if (line.empty()) continue;
+
+        // Uses stringstream and getline with a character anchor ('|') 
+        stringstream ss(line);
+        string nric, name, email, password;
+
+        getline(ss, nric, '|'); //Read data using " | " as the anchor
+        getline(ss, name, '|');
+        getline(ss, email, '|');
+        getline(ss, password); 
+        
+        //Removes leading / trailing spaces added by the iomanip formatting in output_database
+        auto trim = [](string& s) 
+        {
+            size_t first = s.find_first_not_of(" ");
+            if (string::npos == first) return;
+            size_t last = s.find_last_not_of(" ");
+            s = s.substr(first, (last - first + 1));
+        };
+
+        trim(nric);
+        trim(name);
+        trim(email);
+        trim(password);
+
+        if (!nric.empty())
+        {
+            Users temp(name, nric, email, password);
+            user_database[nric] = temp; // Load into the map silently
+        }
+    }
+    inFile.close();
+}
+
 string User_data::login() {
     string username, password;
     cout << endl;

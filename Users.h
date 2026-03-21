@@ -60,6 +60,7 @@ class User_data
         void output_database(); // Write map onto text file
         void input_database(); // Read text file data and convert to map
         void create_librarian(); // Creates a fake librarian with details
+        void input_librarian(); // Read text file data and convert to map for librarians
         string login();
 };
 #endif

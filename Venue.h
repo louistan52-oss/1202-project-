@@ -73,6 +73,8 @@ namespace VenueOps {
     bool load(std::map<char, QMS_Venue>& venues,
               std::map<int, std::string>& timeslots);
 
+    // Remove files at end of program
+    int removeFiles();
     // ── Menu entry point ──────────────────────────────────────────────────────
 
     // Full interactive QMS loop for a logged-in visitor (identified by IC).

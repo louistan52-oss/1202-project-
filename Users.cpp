@@ -3,6 +3,7 @@
 #include "BMS.h"
 #include "QMS.h"
 #include "Venue.h"
+#include "Robot_Transport_System.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -106,29 +107,16 @@ bool password_verifier(string user_password) {
     }
 }
 
-int removeFile(){
-    bool status=1;
-    while(status){
-    status = remove("vA_shelves.txt");
-    status = remove("vB_shelves.txt");
-    status = remove("vC_shelves.txt");
-    status = remove("vA_stock.txt");
-    status = remove("vB_stock.txt");
-    status = remove("vC_stock.txt");
-    }
-    if (status!=0) perror("error deleting file");
-    return 0;
-}
-
 void program() {
     map<string, Users> user_database;
     map<char, QMS_Venue> venues;
     vector<string> all_NRIC;
     map<int, string> all_timeslots;
     User_data dataObj(user_database, all_NRIC);
+    User_data libObj(user_database, all_NRIC);
 
     dataObj.input_database(); //Load from users.txt silently
-    dataObj.create_librarian(); // Implement Libarian data into map
+    libObj.input_librarian(); //Load from librarian.txt silently
     if (!VenueOps::load(venues, all_timeslots)){ // Load Venues containing timeslots into map
         exit(0);
     }
@@ -162,7 +150,7 @@ void program() {
             cin.ignore(1000, '\n');
             switch (roleChoice){
                 case 1:
-                    log_in = dataObj.login();
+                    log_in = libObj.login();
                     if (log_in == "T0123123F") // Libaraian login User ID
                     {
                         cout << "Welcome Librarian!" << endl;
@@ -170,7 +158,7 @@ void program() {
                     }
                     else if (log_in != "")
                     {
-                        cout << "Access Denied: You do not have Librarian priviledges." << endl;
+                        cout << "Reminder: You are trying to access a librarian account" << endl;
                     }
                     break;
                 case 2:
@@ -240,7 +228,7 @@ void program() {
         case 3:
             cout << "Saving data... Goodbye!" << endl;
             dataObj.output_database();
-            removeFile();
+            VenueOps::removeFiles();
             VenueOps::save(venues);
             Operation = false;
             break;
