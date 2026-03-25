@@ -43,6 +43,7 @@ void BookManagementUser::startSession(char venue) { // Handles book scanning, li
     char decision;
     string currentSerial;
     bool removed;
+    cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
     cout << "--- System Started ---" << endl;
     cout << "\nDo you want to claim up to 2 books? (Y/N): ";
     while (true) // Input validation loop for initial decision
@@ -97,7 +98,11 @@ void BookManagementUser::startSession(char venue) { // Handles book scanning, li
                 }while(true);  
             }
             else if (scannedBooks.size() >= MAX_BOOKS) { // Hard-cap limit check
+                cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
                 cout << "Maximum book limit (2) reached!" << endl;
+                cout << "\nPress Enter to continue...";
+                cin.ignore(1000, '\n'); // Clear the buffer
+                cin.get();              // Wait for user to press "Enter"
                 scanAnother = 'N'; // Automatically end loop if limit is reached
             }
         }
@@ -107,7 +112,8 @@ void BookManagementUser::startSession(char venue) { // Handles book scanning, li
 }
 
 void BookManagementUser::printReceipt() { // Prints a summary of claimed books and clears the session memory
-        cout << "\n================================" << endl;
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
+        cout << "================================" << endl;
         cout << "RECEIPT FOR TAKEN BOOKS" << endl;
         cout << "================================" << endl;
         if (scannedBooks.empty()) {
@@ -119,5 +125,9 @@ void BookManagementUser::printReceipt() { // Prints a summary of claimed books a
         }
         cout << "Total Items: " << scannedBooks.size() << endl;
         cout << "================================\n" << endl;
+        cout << "\nPress Enter to continue...";
+        cin.ignore(1000, '\n'); // Clear the buffer
+        cin.get();              // Wait for user to press "Enter"
         scannedBooks.erase(scannedBooks.begin(),scannedBooks.end()); // Clear the vector so the next user starts with a fresh session
     }
+

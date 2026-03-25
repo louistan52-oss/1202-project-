@@ -84,13 +84,11 @@ bool User_data::delete_user(string &username) { //Handles account deletion with 
     }
 
     if (confirmation == 'Y') { // username Passed by reference; cleared if deletion is successful
-        cout << "You have successfully deleted your account" << endl;
         user_database.erase(username);
         username = "";
         return true;
     }
     else if (confirmation == 'N') { // True if deleted, False if cancelled
-        cout << "You have decided to cancel" << endl;
         return false;
     }
     return true;
@@ -221,16 +219,21 @@ string User_data::login() {
         cout << "Enter password: ";
         cin >> password;
         if (password == check) {
-            cout << "Logged in!" << endl;
             return username; // Returns NRIC to be used as a session key
         }
         else {
             cout << "Wrong password" << endl;
+            cout << "\nPress Enter to continue...";
+            cin.ignore(1000, '\n'); // Clear the buffer
+            cin.get();              // Wait for user to press "Enter"
             return "";
         }
     }
     else {
         cout << "Username does not exist" << endl;
+        cout << "\nPress Enter to continue...";
+        cin.ignore(1000, '\n'); // Clear the buffer
+        cin.get();              // Wait for user to press "Enter"    
         return "";
     }
 }

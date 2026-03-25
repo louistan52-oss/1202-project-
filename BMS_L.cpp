@@ -116,7 +116,8 @@ int Books::BMS_L(const char& v, int cat, bool sort, bool show) {
     std::sort(data.book.begin(), data.book.end(), cmp);
 
     if (show){
-        cout << "\nDisplaying Books for Venue: " << v << endl;
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
+        cout << "Displaying Books for Venue: " << v << endl;
         Books::printHeader(data, false); // Don't show venue col since we filtered for it
 
         int genreW = data.size[1] + 3;
@@ -264,6 +265,7 @@ int Books::BMS(User_data& dataObj){
     int cat;
     bool sort;
     do{
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
         cout << "\n=== BMS - Librarian ===" << endl;
         cout << "1. View all books" << endl;
         cout << "2. Check Specific Venue" << endl;
@@ -275,16 +277,19 @@ int Books::BMS(User_data& dataObj){
         cin >> choice; //first choice, menu option
         cin.clear();   //clear all input
         cin.ignore(1000, '\n');
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
         switch (choice){
             case '1':   //show all books across database          
                 cat = catSelect();
                 sort= sortSelect();
+                cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
                 Books::BMS_L(cat,sort); //inputs: category, sorting (high-low)
                 break;
             case '2':   //2nd choice: venue.
                 choice = venueSelect();
                 cat = catSelect();
                 sort = sortSelect();
+                cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
                 Books::BMS_L(choice, cat, sort); //input: venue
                 break;
             case '3':
@@ -294,7 +299,6 @@ int Books::BMS(User_data& dataObj){
                 Books::viewAllAccounts(dataObj);
                 break;
             case '5': //Exit
-                cout << "Exiting BMS." << endl;
                 return 0;
             default:    //Error
                 cout << "Invalid option. Please try again: " << endl;

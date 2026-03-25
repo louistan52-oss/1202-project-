@@ -39,7 +39,7 @@ bool checkQueueStatus(string IC, const Queue& obj){ // checks IC against queue, 
     return (obj.queue.find(IC) != obj.queue.end());
 }
 void printQueueDetails(string IC, const Queue& obj) {
-    cout <<"Queue Details:" << endl;
+    cout <<"\nQueue Details:" << endl;
     for (const auto& e: obj.queue){
         if (e == IC)
         {
@@ -264,29 +264,37 @@ bool leave_venue(string IC, map<char, QMS_Venue>& venues) {
     return false;
 }
 
+void PressEnterToContinue()
+{
+    cout << "\nPress Enter to continue...";
+    cin.ignore(1000, '\n'); // Clear the buffer
+    cin.get();              // Wait for user to press "Enter"
+}
+
 int QMSMenu(string IC, map<char, QMS_Venue>& venues, const map<int, string>& timeslots) {
     bool to_stop = false;
     static bool entered = false; // Changing this to static makes the function "remember" the value between different calls.
     int choice;
     while (!to_stop){
-
-        cout << "\n--- Queue Manager System ---" << endl;
-        cout << "1. Book/Cancel Timeslot" << endl;
+        cout << "--- Queue Manager System ---" << endl;
+        cout << "1. Book/Cancel Timeslot (Testcase Purposes: Book Venue A, 1500 to enter venue)" << endl;
         cout << "2. Enter Venue" << endl;
         cout << "3. Leave Venue" << endl;
         cout << "4. Quit QMS" << endl;
         cout << "Selection: ";
         cin >> choice;
-
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
         if (choice == 1){
 
             if (!check_booking(IC, venues)){
                 char venue_sel = venueSelection(); // A, B or C
+                cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
                 string time_sel = timeSelection(venues[venue_sel], timeslots); // 0900, 1000, 1100, etc.
 
                 venues[venue_sel][time_sel].addToQueue(IC);
 
                 printQueueDetails(IC, venues[venue_sel][time_sel]);
+                PressEnterToContinue();
             }
             else {
                 continue;
@@ -298,37 +306,46 @@ int QMSMenu(string IC, map<char, QMS_Venue>& venues, const map<int, string>& tim
             if (entered) // LAYER 1: Check if the person is physically already inside
             {
                 cout << ">> Access Denied: You are already inside the venue. <<" << endl;
+                PressEnterToContinue();
                 continue; // Go back to the menu selection
             }
             
             if (enter_venue(IC, venues, 'A', "1500"))
             {
                 cout << "You may proceed into the venue" << endl << endl;
+                PressEnterToContinue();
                 entered = true;
                 to_stop = true;
             }
             else
             {   // This only triggers if they are NOT inside AND have NO booking
                 cout << "Access Denied: No valid reservation found for this time slot." << endl;
+                PressEnterToContinue();
             }
         }
 
         else if (choice == 3){
             if (!entered){
                 cout << "You cannot leave what you haven't entered" << endl;
+                cout << "\nPress Enter to continue...";
+                cin.ignore(1000, '\n'); // Clear the buffer
+                cin.get();              // Wait for user to press "Enter"
             }
             else{
                 leave_venue (IC, venues);
                 cout << "You have left the venue. GOODBYE" << endl;
+                PressEnterToContinue();
                 to_stop = true;
             }
         }
         else if (choice == 4){
             to_stop = true;
             cout << "Program closing..." << endl;
+            PressEnterToContinue();
         }
         else{
-            cout << "Choose again: ";
+            cout << "Invalid choice!" << endl;
+            PressEnterToContinue();
         }
     }
     return choice;

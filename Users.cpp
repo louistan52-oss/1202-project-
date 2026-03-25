@@ -64,18 +64,6 @@ void Users::display_user() {
     cout << "Email: " << get_email() << endl;
 }
 
-// Other functions
-void menu() {
-    cout << endl;
-    cout << string(35, '=') << endl;
-    cout << "Enter corresponding letter" << endl;
-    cout << "(Q) to register a Queue" << endl;
-    cout << "(A) to take your choosen books home" << endl;
-    cout << "(D) to Delete account" << endl;
-    cout << "(L) to Logout" << endl;
-    cout << string(35, '=') << endl;
-}
-
 bool password_verifier(string user_password) {
     bool upper = false, lower = false, digit = false; 
     if (user_password.length() < 8) {
@@ -125,6 +113,7 @@ void program() {
     string log_in;
     bool Operation = true;
     while (Operation) {
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
         cout << "\n========== Book Giveaway Menu ==========" << endl;
         cout << "1. Login" << endl;
         cout << "2. Register" << endl;
@@ -137,6 +126,7 @@ void program() {
             cin.ignore(1000, '\n');
             continue;
         }
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
         switch (choice){
             case 1:
                 int roleChoice;
@@ -148,6 +138,7 @@ void program() {
 
             cin.clear();
             cin.ignore(1000, '\n');
+            cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
             switch (roleChoice){
                 case 1:
                     log_in = libObj.login();
@@ -166,6 +157,7 @@ void program() {
                     if (log_in != "")
                     {
                     int option;
+                    cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
                     cout << "\n--- Menu ---" << endl;
                     cout << "1. Enter booking reservation" << endl;
                     cout << "2. Delete account" << endl;
@@ -178,11 +170,11 @@ void program() {
                             cin.clear();
                             cin.ignore(1000, '\n');
                         }
+                        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
                         if (option == 1) // Redirect to Queue Management
                         {
                             bool has_book = true;
                             int QMS_choice;
-                            cout << "Welcome Visitor! Redirecting to QMS..." << endl;
                             while (has_book)
                             {
                                 QMS_choice = QMSMenu(log_in, venues, all_timeslots);
@@ -234,6 +226,9 @@ void program() {
             break;
         default:
             cout << "Invalid choice. Please pick 1-3!" << endl;
+            cout << "\nPress Enter to continue...";
+            cin.ignore(1000, '\n'); // Clear the buffer
+            cin.get();              // Wait for user to press "Enter"  
             break;
         }
     }
