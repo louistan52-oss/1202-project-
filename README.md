@@ -9,5 +9,5 @@
 ```sh
 g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BMS_U.cpp QMS.cpp Robot_Transport_System.cpp User_data.cpp Users.cpp Venue.cpp main.cpp -o "filename"  
 ```
-
+Feel free to edit "filename" to whatever file name you would like your main to be
 Remember to download all relevant text files (.txt) and place them within the same directory as main.exe file. Code is dependant on the text files
