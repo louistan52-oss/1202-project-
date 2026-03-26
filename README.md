@@ -5,7 +5,7 @@
 ## How to run entire program:
 1. Download main.exe and run via Ubuntu Terminal commands on VSCode (./main.exe)
 2. Compile it yourself; Download all the header (.h) and source code (.cpp) files. The command should look like:
-'''sh
-g++ -std=c++17 
-'''
+```sh
+g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BMS_U.cpp QMS.cpp Robot_Transport_System.cpp User_data.cpp Users.cpp Venue.cpp main.cpp -o "filename"  
+```
 Remember to download all relevant text files (.txt) and place them within the same directory as main.exe file. Code is dependant on the text files
