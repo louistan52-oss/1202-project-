@@ -276,6 +276,7 @@ int QMSMenu(string IC, map<char, QMS_Venue>& venues, const map<int, string>& tim
     static bool entered = false; // Changing this to static makes the function "remember" the value between different calls.
     int choice;
     while (!to_stop){
+        cout << "\033[2J\033[3J\033[H" << flush; // Clear screen
         cout << "--- Queue Manager System ---" << endl;
         cout << "1. Book/Cancel Timeslot (Testcase Purposes: Book Venue A, 1500 to enter venue)" << endl;
         cout << "2. Enter Venue" << endl;
