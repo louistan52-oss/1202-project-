@@ -19,6 +19,8 @@ For the Librarian side of the program, the librarian is able to see the number a
 
 Details like user accounts, books left and time slots taken are saved when the program ends, providing a persistent database of books and users
 
+* Do note that the librarian already has a login account prepared for testing, it is under the txt file "librarian.txt"
+
 ## Built with:
 C++
 
