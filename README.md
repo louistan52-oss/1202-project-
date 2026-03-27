@@ -36,7 +36,7 @@ There are 3 main ways to obtain the main executable
 ```sh
 g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BMS_U.cpp QMS.cpp Robot_Transport_System.cpp User_data.cpp Users.cpp Venue.cpp main.cpp -o main.exe  
 ```
-3. Go to main.cpp and click run
+3. Go to main.cpp and click run file at the top right corner play button (can run without debugging)
 
 Feel free to edit the executable file to whatever file name you would like your main to be
 
