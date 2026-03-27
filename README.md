@@ -25,6 +25,10 @@ Details like user accounts, books left and time slots taken are saved when the p
 C++
 
 ## How to run entire program:
+
+Download the zip file. Remember to check that everything is inside. Using VSCode, open a terminal and change directory all the way to the downloaded folder
+
+There are 2 main ways to obtain the main executable
 1. Download main.exe and run via Ubuntu Terminal commands on VSCode (./main.exe)
 2. Compile it yourself; Download all the header (.h) and source code (.cpp) files. The command should look like:
 
@@ -32,6 +36,12 @@ C++
 g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BMS_U.cpp QMS.cpp Robot_Transport_System.cpp User_data.cpp Users.cpp Venue.cpp main.cpp -o .exe  
 ```
 Feel free to edit the executable file to whatever file name you would like your main to be
+
+Now with the main executable file, in Ubuntu Terminal run the command 
+```sh
+./main.exe
+```
+Ensure that you are in the same directory as the file
 
 Remember to download all relevant text files (.txt) and place them within the same directory as main executable file. Code is dependant on the text files
 
