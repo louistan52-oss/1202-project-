@@ -28,7 +28,7 @@ C++
 
 Download the zip file. Remember to check that everything is inside. Using VSCode, open a terminal and change directory all the way to the downloaded folder
 
-There are 2 main ways to obtain the main executable
+There are 3 main ways to obtain the main executable
 1. Download main.exe and run via Ubuntu Terminal commands on VSCode (./main.exe)
 2. Compile it yourself; Download all the header (.h) and source code (.cpp) files. The command should look like:
 
