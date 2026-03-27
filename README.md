@@ -6,20 +6,18 @@
 A library management system to give away books in a more efficient and orderly manner during events
 
 ### Context
-In September 2025, to celebrate the National Library Board (NLB) 30th Anniversary and SG60, 60000 books were given out over a period of 2 days, 13th and 14th September at Bras Basah, the event saw more than 60000 books given out that was catered for all ages, from fiction and non-fiction, to mother tongue textbooks. Even though the giveaway was a success (i.e all the books were given out), many reports from both the public and the media mentioned that the crowd management was not clear which resulted in some unsatisfactory experiences with some of the people.
+The context behind the problem is that in September 2025, to celebrate the National Library Board (NLB) 30th Anniversary and SG60, 60000 books were given out over a period of 2 days, 13th and 14th September at Bras Basah. The event saw more than 60000 books given out that catered for all ages, from fiction and non-fiction, to mother tongue textbooks. Even though the giveaway was a success (i.e all the books were given out), many reports from both the public and media mentioned that the crowd management was not clear which resulted in unsatisfactory experiences with some people.
 
 ### Description
 Our program has 2 portions; User and Librarian
 
 #### User
-For the User side of the program, it helps new users create membership accounts, allowing them to book timeslots to enter the book giveaway event. This counters the crowding issue. The public can take a maximum of 2 books, and before they can leave the venue, they will have to scan the serial numbers on the books. This is so that it prevents them from:
-1. Taking more than 2 books
-2. Taking duplicates of the same book
-
-This also helps the system remove the book(s) from the database. Users will be saved when the program ends, along with their details like password, books borrowed and timeslot chosen
+For the User side of the program, users can create membership accounts, allowing them to book timeslots to enter the book giveaway event. This solves the crowding issue. The public can take a maximum of 2 books, and before they can leave the venue, they will have to scan the serial numbers on the books. This is so that it prevents them from taking more than 2 books and taking duplicates of the same book.
 
 #### Librarian
-For the Librarian side of the program, the librarian is able to see the number and type of books in any venue or all the venues. The librarian is also able to look at details of users who have registered as a member. The program is able to call upon robots that are placed in each venue to refill books as needed when called upon by the librarian. The robots themselves have a battery life which means they need to be recharged constantly. The librarian is able to check on the statuses of robots at each location, whether they are charging, idle or refilling shelves
+For the Librarian side of the program, the librarian is able to see the number and type of books in any venue or all the venues. The librarian is also able to look at some details of users who have registered as a member. The program features robots that can help to refill books on empty shelves. Librarians call upon robots that are placed in each venue to refill books as needed. The librarian is able to see the statuses of each robot at each venue, be it charging, idle or refilling shelves
+
+Details like user accounts, books left and time slots taken are saved when the program ends, providing a persistent database of books and users
 
 ## Built with:
 C++
