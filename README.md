@@ -21,9 +21,14 @@ Remember to download all relevant text files (.txt) and place them within the sa
 
 ## Programmers:
 Oh Chuan Chew
+
 Christopher Lee
+
 Joven Toh
+
 Louis Tan Jun Heng
+
 Tan Ka Heng Anthony
+
 Yeoman Pok Guan Lin
 
