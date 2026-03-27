@@ -1,6 +1,12 @@
 <div align = "center">
-<h1>1202 Project Group 9: Book Management System</h1>
+<h1>1202 Project Group 9: Library Management System</h1>
 </div>
+
+## Project Description
+A library management system to give away books in a more efficient and orderly manner during events. 
+
+## Built with:
+C++
 
 ## How to run entire program:
 1. Download main.exe and run via Ubuntu Terminal commands on VSCode (./main.exe)
@@ -12,3 +18,12 @@ g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BM
 Feel free to edit "filename" to whatever file name you would like your main to be
 
 Remember to download all relevant text files (.txt) and place them within the same directory as main.exe file. Code is dependant on the text files
+
+## Programmers:
+Oh Chuan Chew
+Christopher Lee
+Joven Toh
+Louis Tan Jun Heng
+Tan Ka Heng Anthony
+Yeoman Pok Guan Lin
+
