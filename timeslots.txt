@@ -63,8 +63,3 @@ time = 1600
 time = 1700
 
 time = 1800
-
-venue = a
-
-time = 0900
-T0110110H
