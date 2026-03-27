@@ -3,7 +3,22 @@
 </div>
 
 ## Project Description
-A library management system to give away books in a more efficient and orderly manner during events. 
+A library management system to give away books in a more efficient and orderly manner during events
+
+### Context
+In September 2025, to celebrate the National Library Board (NLB) 30th Anniversary and SG60, 60000 books were given out over a period of 2 days, 13th and 14th September at Bras Basah, the event saw more than 60000 books given out that was catered for all ages, from fiction and non-fiction, to mother tongue textbooks. Even though the giveaway was a success (i.e all the books were given out), many reports from both the public and the media mentioned that the crowd management was not clear which resulted in some unsatisfactory experiences with some of the people.
+
+### Description
+Our program has 2 portions; User and Librarian
+
+#### User
+For the User side of the program, it helps new users create membership accounts, allowing them to book timeslots to enter the book giveaway event. This counters the crowding issue. The public can take a maximum of 2 books, and before they can leave the venue, they will have to scan the serial numbers on the books. This is so that it prevents them from:
+1. Taking more than 2 books
+2. Taking duplicates of the same book
+This also helps the system remove the book(s) from the database. 
+
+#### Librarian
+For the Librarian side of the program, the librarian is able to see the number and type of books in any venue or all the venues. The librarian is also able to look at details of users who have registered for membership. The program is able to call upon robots that are placed in each venue to refill books as needed when called upon by the librarian. The robots themselves have a battery life which means they need to be recharged constantly. The librarian is able to check on the statuses of robots at each location, whether they are charging, idle or refilling shelves
 
 ## Built with:
 C++
@@ -13,11 +28,11 @@ C++
 2. Compile it yourself; Download all the header (.h) and source code (.cpp) files. The command should look like:
 
 ```sh
-g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BMS_U.cpp QMS.cpp Robot_Transport_System.cpp User_data.cpp Users.cpp Venue.cpp main.cpp -o "filename"  
+g++ -std=c++17 BMS.h QMS.h Robot_Transport_System.h Users.h Venue.h BMS_L.cpp BMS_U.cpp QMS.cpp Robot_Transport_System.cpp User_data.cpp Users.cpp Venue.cpp main.cpp -o .exe  
 ```
-Feel free to edit "filename" to whatever file name you would like your main to be
+Feel free to edit the executable file to whatever file name you would like your main to be
 
-Remember to download all relevant text files (.txt) and place them within the same directory as main.exe file. Code is dependant on the text files
+Remember to download all relevant text files (.txt) and place them within the same directory as main executable file. Code is dependant on the text files
 
 ## Programmers:
 Oh Chuan Chew
