@@ -15,10 +15,11 @@ Our program has 2 portions; User and Librarian
 For the User side of the program, it helps new users create membership accounts, allowing them to book timeslots to enter the book giveaway event. This counters the crowding issue. The public can take a maximum of 2 books, and before they can leave the venue, they will have to scan the serial numbers on the books. This is so that it prevents them from:
 1. Taking more than 2 books
 2. Taking duplicates of the same book
-This also helps the system remove the book(s) from the database. 
+
+This also helps the system remove the book(s) from the database. Users will be saved when the program ends, along with their details like password, books borrowed and timeslot chosen
 
 #### Librarian
-For the Librarian side of the program, the librarian is able to see the number and type of books in any venue or all the venues. The librarian is also able to look at details of users who have registered for membership. The program is able to call upon robots that are placed in each venue to refill books as needed when called upon by the librarian. The robots themselves have a battery life which means they need to be recharged constantly. The librarian is able to check on the statuses of robots at each location, whether they are charging, idle or refilling shelves
+For the Librarian side of the program, the librarian is able to see the number and type of books in any venue or all the venues. The librarian is also able to look at details of users who have registered as a member. The program is able to call upon robots that are placed in each venue to refill books as needed when called upon by the librarian. The robots themselves have a battery life which means they need to be recharged constantly. The librarian is able to check on the statuses of robots at each location, whether they are charging, idle or refilling shelves
 
 ## Built with:
 C++
